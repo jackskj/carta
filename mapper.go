@@ -1,7 +1,7 @@
 package carta
 
 import (
-	db "database/sql"
+	"database/sql"
 	"errors"
 	"fmt"
 	"log"
@@ -28,8 +28,8 @@ type Mapper struct {
 	Logs   map[string]bool
 	Error  error
 
-	columns     map[string]int   // columns returned by executing the sql, mapped to their index
-	columnTypes []*db.ColumnType // column types returned by executing the SQL
+	columns     map[string]int    // columns returned by executing the sql, mapped to their index
+	columnTypes []*sql.ColumnType // column types returned by executing the SQL
 }
 
 // ColumnField represents one field - column relationship
@@ -66,7 +66,7 @@ type SqlMap struct {
 
 // Maps db rows onto the complex struct,
 // Response must be a struct, pointer to a struct for our response, a slice of structs or slice of pointers to a struct
-func Map(rows *db.Rows, dst interface{}) error {
+func Map(rows *sql.Rows, dst interface{}) error {
 	columns, err := rows.Columns()
 	if err != nil {
 		return err
@@ -85,27 +85,24 @@ func Map(rows *db.Rows, dst interface{}) error {
 		// if destination is *struct, cardinality is has-one (association)
 		// if destination is *[], cardinality is has-many (collection)
 		var tlec Cardinality
-		var setter mapSetter
 		switch dst.(type) {
-		case *[]interface{}, []interface{}:
+		case *[]interface{}:
 			tlec = Collection
-			setter = newListSetter(dstTyp)
 		default:
 			if isStructPtr(dstTyp) == false {
-				return fmt.Errorf("carta: cannot map onto %T, destination must be pointer to a slice/array( *[] ) or pointer to struct", dstTyp)
+				return fmt.Errorf("carta: cannot map rows onto %T, destination must be pointer to a slice(*[]) or pointer to struct", dstTyp)
 			}
 			tlec = Association
-			setter = newStructSetter(dstTyp)
 		}
 		mapper := Mapper{
 			SqlMap: &SqlMap{
 				MapType:     dstTyp,
 				Cardinality: tlec,
-				mapSetter:   setter,
+				mapSetter:   newSetter(dst),
 			},
 			columns:     map[string]int{},
 			columnTypes: columnTypes,
-		}
+		
 		for columnIndex, column := range columns {
 			mapper.columns[column] = columnIndex
 		}
@@ -192,10 +189,12 @@ func generateSqlMap(sqlMap *SqlMap, columns []string, parent *SqlMap) {
 	return
 }
 
-// test wether incoming value is a pointer to a struct, courtesy of BQ api
-func isStructPtr(x interface{}) bool {
-	t := reflect.TypeOf(x)
+// test wether incoming type is a pointer to a struct, courtesy of BQ api
+func isStructPtr(t reflect.Type) bool {
 	return t.Kind() == reflect.Ptr && t.Elem().Kind() == reflect.Struct
+}
+func isSlicePtr(t reflect.Type) bool {
+	return t.Kind() == reflect.Ptr && t.Elem().Kind() == reflect.Slice
 }
 
 // Retrieves the name of the proto field from the proto file

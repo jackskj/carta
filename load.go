@@ -1,12 +1,12 @@
 package carta
 
 import (
-	db "database/sql"
+	"database/sql"
 	"fmt"
 	"log"
 )
 
-func (m *Mapper) loadRows(rows *db.Rows, dst interface{}) error {
+func (m *Mapper) loadRows(rows *sql.Rows, dst interface{}) error {
 	defer rows.Close() // may not need
 	var err error
 	row := make([]interface{}, len(m.columns))
@@ -35,24 +35,28 @@ func loadRow(sqlMap *SqlMap, row []interface{}, resp interface{}, rsv *resolver)
 		dst = cachedDst
 	} else {
 		// example if dst is *[]*User
-		// after this block, grow will appens new(*User) and return that *User
+		// after this block, grow will append new *User and return that *User
 		dst, err = sqlMap.mapSetter.grow(resp)
 		if growErr, ok := err.(NonSlinceGrowError); ok {
-			log.Println(growErr.Error()) // not breaking, but sql and/or expected response if incorrect
+			log.Println(growErr.Error()) // not breaking, but sql and/or expected response is incorrect
+			// todo: consider this breaking, and simply return err
 			return nil
 		} else if err != nil {
 			return err
 		}
+
+		for _, field := range sqlMap.PresentColumns {
+			if err := sqlMap.mapSetter.set(dst, row[field.columnIndex], field.fieldIndex); err != nil {
+				return err
+			}
+		}
+
+		rsv.Store(uid, dst)
 	}
 
-	for _, field := range sqlMap.PresentColumns {
-		if err := sqlMap.mapSetter.set(dst, row[field.columnIndex], field.fieldIndex, rsv, uid); err != nil {
-			return err
-		}
-	}
 	for i, subMap := range sqlMap.SubMaps {
 		subMapDst := sqlMap.mapSetter.subMapByIndex(dst, i)
-		if err := loadRow(subMap, subMapDst, subMapDst, rsv); err != nil {
+		if err := loadRow(subMap, row, subMapDst, rsv); err != nil {
 			return err
 		}
 	}
@@ -72,19 +76,32 @@ func getUniqueId(row []interface{}, sqlMap *SqlMap) string {
 
 	out := ""
 	for _, i := range columnIds {
-		// TODO: Implement a more advances, and better performing hashing
+		// TODO: Implement a more advanced and better performing hashing
+		// this can be done by dumping row values into []byte by using
+		// sql.driver.valuer interface
 		out = out + fmt.Sprintf("%v|", row[i])
 	}
 
 	return out
 }
 
-// Resolver determines whether a particular set of values were already returned from sql.
-// if a set of column values was previously returned by SQL,
+// Resolver determines whether an object has already appeared in past rows.
+// ie, if a set of column values was previously returned by SQL,
 // this is nececaty to determine whether a new instantiation of a type is necesarry
 // Carta uses all present columns in a particular message to generate a unique id,
 // if successive rows have the same id, it identifies the same element
 // always include a uniquely identifiable column in your query
+// resolver cannot be stored in pointer reciver, this would result in concurrency bugs,
+//
+// for example, if user requests mapping to *[]*User  where
+// type User  struct {
+// userId int
+// Addresses []*Address
+// }
+// if sql query returns multiple rows with the same userId, resolver will return
+// a pointer to the *User with that id so that furhter mapping can continue, in this case, mapping of address
+//
+// TODO: consider passing resover in context value
 type resolver struct {
 	uniqueIds map[string]interface{}
 }
