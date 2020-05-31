@@ -1,176 +1,10 @@
 package carta
 
 import (
-	"database/sql"
 	"errors"
 	"fmt"
 	"reflect"
-	"time"
-
-	"github.com/golang/protobuf/ptypes/timestamp"
 )
-
-const (
-	CartaTagKey string = "carta"
-)
-
-// SQL Map cardinality can either be:
-// Association: has-one relationship, must be nested structs in the response
-// Collection: had-many relationship, repeated (slice, array) nested struct or pointer to it
-type Cardinality int
-
-const (
-	Unknown Cardinality = iota
-	Association
-	Collection
-)
-
-type loadFunc func(v reflect.Value, dst interface{}) error
-
-type Mapper struct {
-	Crd Cardinality //
-
-	IsListPtr bool // true if destination is *[], false if destination is [], used only if cardinality is a collection
-
-	// Basic mapper is used for collections where underlying type is basic (any field that is able to be set, look at isBasicType for more deatils )
-	// for example
-	// type User struct {
-	//        UserId    int
-	//        UserAddr  []sql.NullString // collection submap where mapper is basic
-	//        UserPhone []string         // also basic mapper
-	//        UserStuff *[]*string       // also basic mapper
-	//        UserBlog  []*Blog          // this is NOT a basic mapper
-	// }
-	// basic can only be true if cardinality is collection
-	IsBasic     bool
-	BasicLoader loadFunc
-
-	Typ          reflect.Type     // Underlying type to be mapped
-	IsTypePtr    bool             // is the underlying type pointed to
-	FieldLoaders map[int]loadFunc // setters for each fields, int is the i'th struct field
-
-	// Columns of the SQL response which are present in this struct
-	// int represents the ith struct field of this mapper where the column is to be mapped
-	PresentColumns map[string]int
-
-	// Columns of all parents structs, used to detect whether a new struct should be appended for has-many relationships
-	// order is not nececary
-	AncestorColumns map[string]bool
-
-	// when reusing the same struct multiple times, you are able to specify the colimn prefix using parent structs
-	// example
-	// type Employee struct {
-	// 	Id int
-	// }
-	// type Manager struct {
-	// 	Employee
-	// 	Employees []Employee
-	// }
-	// the following querry would correctly map if we were mapping to *[]Manager
-	// "select id, employees_id from employees join managers"
-	// employees_ is the prefix of the parent
-	FieldNames    map[string]int
-	AncestorNames []string
-
-	// Nested structs which correspond to any has-one has-many relationships
-	// int is the ith element of this struct where the submap exists
-	SubMaps map[int]*Mapper
-}
-
-func newMapper(t reflect.Type, ancestorNames []string) (*Mapper, error) {
-	var (
-		crd     Cardinality
-		elemTyp reflect.Type
-		mapper  *Mapper
-		subMaps map[int]*Mapper
-		err     error
-	)
-
-	isListPtr := false
-	isBasic := false
-	isTypePtr := false
-
-	if isSlicePtr(t) {
-		crd = Collection
-		elemTyp = t.Elem() // []interface{} to intetrface{}
-		isListPtr = true
-	} else if t.Kind() == reflect.Slice {
-		crd = Collection
-		elemTyp = t.Elem().Elem() // *[]interface{} to intetrface{}
-
-	}
-
-	if crd == Collection {
-		isBasic = isBasicType(t)
-	}
-
-	if isStructPtr(t) {
-		crd = Association
-		elemTyp = t.Elem()
-		isTypePtr = true
-	} else if t.Kind() == reflect.Struct {
-		crd = Association
-		elemTyp = t
-	}
-
-	if crd == Unknown {
-		return nil, errors.New("carts: unknown mapping")
-	}
-
-	mapper = &Mapper{
-		Crd:           crd,
-		IsListPtr:     isListPtr,
-		IsBasic:       isBasic,
-		Typ:           elemTyp,
-		IsTypePtr:     isTypePtr,
-		AncestorNames: ancestorNames,
-	}
-
-	if isBasic {
-		mapper.BasicLoader = determineBasicLoaderFunc(elemTyp)
-		return mapper, nil
-	}
-
-	mapper.FieldLoaders = determineLoaderFuncs(elemTyp)
-	if subMaps, err = findSubMaps(elemTyp); err != nil {
-		return nil, err
-	}
-
-	mapper.SubMaps = subMaps
-
-	return mapper, nil
-}
-
-func findSubMaps(t reflect.Type, ancestorNames []string) (map[int]*Mapper, error) {
-	var (
-		subMap *Mapper
-		err    error
-		name   string
-	)
-	subMaps := map[int]*Mapper{}
-	if t.Kind() != reflect.Struct {
-		return nil, nil
-	}
-	for i := 0; i < t.NumField(); i++ {
-		field := t.Field(i)
-		if isExported(field) && isSubMap(field.Type) {
-			if tag := nameFromTag(field.Tag); tag != "" {
-				name = tag
-			} else {
-				name = field.Name
-			}
-			if subMap, err = newMapper(field.Type, append(ancestorNames, name)); err != nil {
-				return nil, err
-			}
-			subMaps[i] = subMap
-		}
-	}
-	return subMaps, nil
-}
-
-func isExported(f reflect.StructField) bool {
-	return (f.PkgPath == "")
-}
 
 // If a new mapping has been foing, grow will instantiate a new instance our type and append it
 func (s *Mapper) grow(dst reflect.Value) (interface{}, interface{}, error) {
@@ -182,7 +16,7 @@ func (s *Mapper) subMapByIndex(resp reflect.Value, i int) interface{} {
 	return nil
 }
 
-func (ss *StructMapper) set(dst reflect.Value, v interface{}, fieldIndex int) error {
+func (s *Mapper) set(dst reflect.Value, v interface{}, fieldIndex int) error {
 	if err := ss.Mapper.loaders[fieldIndex](dst, v); err != nil {
 		return err
 	}
@@ -198,7 +32,7 @@ func (s *Mapper) grow(dst reflect.Value) (interface{}, error) {
 		// Grow is tricky for structs, invocation of this function where cardinality is association more then once indicates either user's mistake or broker referencial integrity
 		// To explain, if a user asks to map sql response to *User, he/she expects only one user
 		// However, if carta calls of this function more thank once, it indicates that carta logic determined that the sql response actually would map to many Users,
-		if ss.IsMapped == false {
+		if s.IsMapped == false {
 			// ss.IsMapped = true
 			// if dst.IsNil
 			return dst, dst, nil
@@ -216,6 +50,20 @@ var NullLoad = errors.New("Null value cannot be loaded, use sql.NullX type")
 
 func OverflowErr(i interface{}, typ reflect.Type) error {
 	return fmt.Errorf("carta: value %v overflows %v", i, typ)
+}
+
+func determineBasicLoaderFunc(m *Mapper) error {
+	return nil
+}
+
+func determineLoaderFuncs(m *Mapper) error {
+	if m.IsBasic {
+		return determineBasicLoaderFunc(m)
+	}
+	for _, c := range m.PresentColumns {
+		m.FieldLoaders[c.fieldIndex] = getLoaderFunc()
+	}
+	return nil
 }
 
 // Mapper functions inspired by BQ api
@@ -354,57 +202,4 @@ func determineSetFunc(ftyp reflect.Type, sqlTyp reflect.Type) loadFunc {
 		}
 	}
 	return nil
-}
-
-func nameFromTag(t reflect.StructTag) string {
-	// s := t.Get(CartaTagKey)
-	return ""
-}
-
-func isSubMap(t reflect.Type) bool {
-	if t.Kind() == reflect.Ptr {
-		t = t.Elem()
-	}
-	return (!isBasicType(t) && (t.Kind() == reflect.Struct))
-}
-
-func isStructPtr(t reflect.Type) bool {
-	return t.Kind() == reflect.Ptr && t.Elem().Kind() == reflect.Struct
-}
-
-// Basic types are any types that are intended to be set from sql row data
-// Primative fields, sql.NullXXX, time.Time, pg timestamp qualify as basic
-func isBasicType(t reflect.Type) bool {
-	if t.Kind() == reflect.Ptr {
-		t = t.Elem()
-	}
-	if _, ok := basicKinds[t.Kind()]; ok {
-		return true
-	}
-	if _, ok := basicTypes[t]; ok {
-		return true
-	}
-	return false
-}
-
-var basicKinds = map[reflect.Kind]bool{
-	reflect.Float64: true,
-	reflect.Float32: true,
-	reflect.Int32:   true,
-	reflect.Uint32:  true,
-	reflect.Int64:   true,
-	reflect.Uint64:  true,
-	reflect.Bool:    true,
-	reflect.String:  true,
-}
-
-var basicTypes = map[reflect.Type]bool{
-	reflect.TypeOf(time.Time{}):           true,
-	reflect.TypeOf(timestamp.Timestamp{}): true,
-	reflect.TypeOf(sql.NullBool{}):        true,
-	reflect.TypeOf(sql.NullFloat64{}):     true,
-	reflect.TypeOf(sql.NullInt32{}):       true,
-	reflect.TypeOf(sql.NullInt64{}):       true,
-	reflect.TypeOf(sql.NullString{}):      true,
-	reflect.TypeOf(sql.NullTime{}):        true,
 }
