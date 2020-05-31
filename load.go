@@ -34,9 +34,10 @@ func loadRow(sqlMap *SqlMap, row []interface{}, resp interface{}, rsv *resolver)
 	if cachedDst, ok := rsv.Load(uid); ok {
 		dst = cachedDst
 	} else {
-		// example if dst is *[]*User
-		// after this block, grow will append new *User and return that *User
-		dst, err = sqlMap.mapSetter.grow(resp)
+		// uniqur row mapping found
+		// example if resp is *[]*User, dst is *User
+		// after this block, grow will append new *User and return that *User as dst
+		resp, dst, err = sqlMap.mapSetter.grow(resp)
 		if growErr, ok := err.(NonSlinceGrowError); ok {
 			log.Println(growErr.Error()) // not breaking, but sql and/or expected response is incorrect
 			// todo: consider this breaking, and simply return err
@@ -50,12 +51,11 @@ func loadRow(sqlMap *SqlMap, row []interface{}, resp interface{}, rsv *resolver)
 				return err
 			}
 		}
-
 		rsv.Store(uid, dst)
 	}
 
 	for i, subMap := range sqlMap.SubMaps {
-		subMapDst := sqlMap.mapSetter.subMapByIndex(dst, i)
+		subMapDst := sqlMap.mapSetter.subMapByIndex(resp, i)
 		if err := loadRow(subMap, row, subMapDst, rsv); err != nil {
 			return err
 		}
