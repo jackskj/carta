@@ -10,6 +10,10 @@ import (
 	"github.com/golang/protobuf/ptypes/timestamp"
 )
 
+const (
+	CartaTagKey string = "carta"
+)
+
 // SQL Map cardinality can either be:
 // Association: has-one relationship, must be nested structs in the response
 // Collection: had-many relationship, repeated (slice, array) nested struct or pointer to it
@@ -34,6 +38,8 @@ type Mapper struct {
 	//        UserId    int
 	//        UserAddr  []sql.NullString // collection submap where mapper is basic
 	//        UserPhone []string         // also basic mapper
+	//        UserStuff *[]*string       // also basic mapper
+	//        UserBlog  []*Blog          // this is NOT a basic mapper
 	// }
 	// basic can only be true if cardinality is collection
 	IsBasic     bool
@@ -44,17 +50,34 @@ type Mapper struct {
 	FieldLoaders map[int]loadFunc // setters for each fields, int is the i'th struct field
 
 	// Columns of the SQL response which are present in this struct
-	PresentColumns map[string]*ColumnField
+	// int represents the ith struct field of this mapper where the column is to be mapped
+	PresentColumns map[string]int
 
 	// Columns of all parents structs, used to detect whether a new struct should be appended for has-many relationships
-	AncestorColumns map[string]*ColumnField
+	// order is not nececary
+	AncestorColumns map[string]bool
+
+	// when reusing the same struct multiple times, you are able to specify the colimn prefix using parent structs
+	// example
+	// type Employee struct {
+	// 	Id int
+	// }
+	// type Manager struct {
+	// 	Employee
+	// 	Employees []Employee
+	// }
+	// the following querry would correctly map if we were mapping to *[]Manager
+	// "select id, employees_id from employees join managers"
+	// employees_ is the prefix of the parent
+	FieldNames    map[string]int
+	AncestorNames []string
 
 	// Nested structs which correspond to any has-one has-many relationships
 	// int is the ith element of this struct where the submap exists
 	SubMaps map[int]*Mapper
 }
 
-func newMapper(t reflect.Type) (*Mapper, error) {
+func newMapper(t reflect.Type, ancestorNames []string) (*Mapper, error) {
 	var (
 		crd     Cardinality
 		elemTyp reflect.Type
@@ -95,29 +118,35 @@ func newMapper(t reflect.Type) (*Mapper, error) {
 	}
 
 	mapper = &Mapper{
-		Crd:       crd,
-		IsListPtr: isListPtr,
-		IsBasic:   isBasic,
-		Typ:       elemTyp,
-		IsTypePtr: isTypePtr,
+		Crd:           crd,
+		IsListPtr:     isListPtr,
+		IsBasic:       isBasic,
+		Typ:           elemTyp,
+		IsTypePtr:     isTypePtr,
+		AncestorNames: ancestorNames,
 	}
 
 	if isBasic {
-		mapper.BasicLoader = determineTypeLoaderFunc(elemTyp)
+		mapper.BasicLoader = determineBasicLoaderFunc(elemTyp)
 		return mapper, nil
 	}
 
 	mapper.FieldLoaders = determineLoaderFuncs(elemTyp)
-	if subMaps, err = determineSubMaps(elemTyp); err != nil {
+	if subMaps, err = findSubMaps(elemTyp); err != nil {
 		return nil, err
 	}
+
 	mapper.SubMaps = subMaps
+
 	return mapper, nil
 }
 
-func determineSubMaps(t reflect.Type) (map[int]*Mapper, error) {
-	var subMap *Mapper
-	var err error
+func findSubMaps(t reflect.Type, ancestorNames []string) (map[int]*Mapper, error) {
+	var (
+		subMap *Mapper
+		err    error
+		name   string
+	)
 	subMaps := map[int]*Mapper{}
 	if t.Kind() != reflect.Struct {
 		return nil, nil
@@ -125,7 +154,12 @@ func determineSubMaps(t reflect.Type) (map[int]*Mapper, error) {
 	for i := 0; i < t.NumField(); i++ {
 		field := t.Field(i)
 		if isExported(field) && isSubMap(field.Type) {
-			if subMap, err = newMapper(field.Type); err != nil {
+			if tag := nameFromTag(field.Tag); tag != "" {
+				name = tag
+			} else {
+				name = field.Name
+			}
+			if subMap, err = newMapper(field.Type, append(ancestorNames, name)); err != nil {
 				return nil, err
 			}
 			subMaps[i] = subMap
@@ -320,6 +354,11 @@ func determineSetFunc(ftyp reflect.Type, sqlTyp reflect.Type) loadFunc {
 		}
 	}
 	return nil
+}
+
+func nameFromTag(t reflect.StructTag) string {
+	// s := t.Get(CartaTagKey)
+	return ""
 }
 
 func isSubMap(t reflect.Type) bool {
