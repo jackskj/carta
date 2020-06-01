@@ -25,19 +25,19 @@ func (m *Mapper) loadRows(rows *sql.Rows, dst interface{}) error {
 	return nil
 }
 
-func loadRow(sqlMap *SqlMap, row []interface{}, resp interface{}, rsv *resolver) error {
+func loadRow(m *Mapper, row []interface{}, resp interface{}, rsv *resolver) error {
 	var err error
 	// todo: explain difference between resp and dst
 	var dst interface{}
 
-	uid := getUniqueId(row, sqlMap)
+	uid := getUniqueId(row, m)
 	if cachedDst, ok := rsv.Load(uid); ok {
 		dst = cachedDst
 	} else {
 		// uniqur row mapping found
 		// example if resp is *[]*User, dst is *User
 		// after this block, grow will append new *User and return that *User as dst
-		resp, dst, err = sqlMap.mapSetter.grow(resp)
+		resp, dst, err = m.grow(resp)
 		if growErr, ok := err.(NonSlinceGrowError); ok {
 			log.Println(growErr.Error()) // not breaking, but sql and/or expected response is incorrect
 			// todo: consider this breaking, and simply return err
@@ -46,16 +46,16 @@ func loadRow(sqlMap *SqlMap, row []interface{}, resp interface{}, rsv *resolver)
 			return err
 		}
 
-		for _, field := range sqlMap.PresentColumns {
-			if err := sqlMap.mapSetter.set(dst, row[field.columnIndex], field.fieldIndex); err != nil {
+		for _, field := range m.PresentColumns {
+			if err := m.set(dst, row[field.columnIndex], field.fieldIndex); err != nil {
 				return err
 			}
 		}
 		rsv.Store(uid, dst)
 	}
 
-	for i, subMap := range sqlMap.SubMaps {
-		subMapDst := sqlMap.mapSetter.subMapByIndex(resp, i)
+	for i, subMap := range m.SubMaps {
+		subMapDst := m.subMapByIndex(resp, i)
 		if err := loadRow(subMap, row, subMapDst, rsv); err != nil {
 			return err
 		}
@@ -64,14 +64,14 @@ func loadRow(sqlMap *SqlMap, row []interface{}, resp interface{}, rsv *resolver)
 }
 
 // Generates unique id based on the ancestors of the struct as well as currently considered colum values
-func getUniqueId(row []interface{}, sqlMap *SqlMap) string {
+func getUniqueId(row []interface{}, m *Mapper) string {
 
 	columnIds := []int{}
-	for _, columnField := range sqlMap.PresentColumns {
+	for _, columnField := range m.PresentColumns {
 		columnIds = append(columnIds, columnField.columnIndex)
 	}
-	for _, columnField := range sqlMap.AncestorColumns {
-		columnIds = append(columnIds, columnField.columnIndex)
+	for _, column := range m.AncestorColumns {
+		columnIds = append(columnIds, column.columnIndex)
 	}
 
 	out := ""

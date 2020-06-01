@@ -53,7 +53,7 @@ type Mapper struct {
 	PresentColumns map[string]column
 
 	// Columns of all parents structs, used to detect whether a new struct should be appended for has-many relationships
-	AncestorColumns map[string]bool
+	AncestorColumns map[string]column
 
 	// when reusing the same struct multiple times, you are able to specify the colimn prefix using parent structs
 	// example

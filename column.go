@@ -28,12 +28,12 @@ func allocateColumns(m *Mapper, columns map[string]column) error {
 		}
 	}
 	m.PresentColumns = presentColumns
-	ancestorColumns := map[string]bool{}
-	for columnName, _ := range m.AncestorColumns {
-		ancestorColumns[columnName] = true
+	ancestorColumns := map[string]column{}
+	for columnName, column := range m.AncestorColumns {
+		ancestorColumns[columnName] = column
 	}
-	for columnName, _ := range m.PresentColumns {
-		ancestorColumns[columnName] = true
+	for columnName, column := range m.PresentColumns {
+		ancestorColumns[columnName] = column
 	}
 	for _, subMap := range m.SubMaps {
 		subMap.AncestorColumns = ancestorColumns

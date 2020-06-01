@@ -1,253 +1,275 @@
-kkpackage carta
+package carta
 
 import (
 	"errors"
 	"fmt"
-	"github.com/golang/protobuf/ptypes"
-	"github.com/golang/protobuf/ptypes/timestamp"
-	"log"
+	"math"
 	"reflect"
 	"strconv"
 	"time"
+	"unsafe"
+
+	"github.com/golang/protobuf/ptypes/timestamp"
 )
 
-// This set of functions casts a single value from the DB
-// onto a single proto field type and send the proto field.
-// Inspired by the fmt package
-// Neither proto filed nor db value are known types, hence I use type assertions
+// TODO:  int/float/uint/bool from binary
+// TODO:  timestamp/time/ NillXXX
 
-// TODOs:
-// - reflect each column once column once, then reuse the reflection results
-// - return errors for faulty conversions, for example, casting string to int
-// - convert "null" responses (mssql) to nil responses
-
-type Value struct {
-	rfield   reflect.Value
-	rvalue   reflect.Value
-	ivalue   interface{}
-	intVal   int64
-	uintVal  uint64
-	floatVal float64
-	strVal   string
-	boolVal  bool
-	timeVal  reflect.Value
-	err      error
+type Cell struct {
+	kind   reflect.Kind
+	bits   uint64 //IEEE 754 binary representation of numeric value
+	binary string // non-numeric data as bytes
+	isNull bool
 }
 
-func setProto(field reflect.Value, value interface{}) error {
-	v := Value{
-		rfield: field,
-		rvalue: reflect.ValueOf(value),
-		ivalue: value,
+var NullSet = errors.New("NULL value load cannot be set")
+
+func NewBool(c bool) Cell {
+	if c {
+		return Cell{
+			kind: reflect.Bool,
+			bits: 1,
+		}
 	}
-	switch field.Interface().(type) {
-	case int, int8, int16, int32, int64:
-		v.castVal("int")
-		field.SetInt(v.intVal)
-	case uint, uint8, uint16, uint32, uint64:
-		v.castVal("uint")
-		field.SetUint(v.uintVal)
-	case float32, float64:
-		v.castVal("float")
-		field.SetFloat(v.floatVal)
-	case string:
-		v.castVal("string")
-		field.SetString(v.strVal)
-	case bool:
-		v.castVal("bool")
-		field.SetBool(v.boolVal)
-	case *timestamp.Timestamp:
-		v.castVal("timestamp")
-		field.Set(v.timeVal)
+	return Cell{
+		kind: reflect.Bool,
+		bits: 0,
+	}
+}
+
+func NewFloat32(c float32) Cell {
+	return Cell{
+		kind: reflect.Float32,
+		bits: uint64(math.Float32bits(c)),
+	}
+}
+
+func NewFloat64(c float64) Cell {
+	return Cell{
+		kind: reflect.Float64,
+		bits: math.Float64bits(c),
+	}
+}
+
+func NewInt32(c int32) Cell {
+	return Cell{
+		kind: reflect.Int32,
+		bits: uint64(c),
+	}
+}
+
+func NewUint32(c uint32) Cell {
+	return Cell{
+		kind: reflect.Uint32,
+		bits: uint64(c),
+	}
+}
+
+func NewInt64(c int64) Cell {
+	return Cell{
+		kind: reflect.Int64,
+		bits: uint64(c),
+	}
+}
+
+func NewUint64(c uint64) Cell {
+	return Cell{
+		kind: reflect.Uint64,
+		bits: c,
+	}
+}
+
+func NewString(c string) Cell {
+	return Cell{
+		kind:   reflect.String,
+		binary: c,
+	}
+}
+
+func NewInt(c int) Cell {
+	if unsafe.Sizeof(c) == 4 {
+		return NewInt32(int32(c))
+	}
+	return NewInt64(int64(c))
+}
+
+func NewUint(c uint) Cell {
+	if unsafe.Sizeof(c) == 4 {
+		return NewUint32(uint32(c))
+	}
+	return NewUint64(uint64(c))
+}
+
+func NewTime(c time.Time) Cell {
+	return Cell{}
+}
+
+func NewTimestamp(c timestamp.Timestamp) Cell {
+	return Cell{}
+}
+
+func NewNull() Cell {
+	return Cell{isNull: true}
+}
+
+func (c Cell) Kind() reflect.Kind {
+	return c.kind
+}
+
+func (c Cell) Bool() bool {
+	return (c.bits != 0)
+}
+
+func (c Cell) Int32() int32 {
+	return int32(c.bits)
+}
+
+func (c Cell) Int64() int64 {
+	return int64(c.bits)
+}
+
+func (c Cell) Uint32() uint32 {
+	return uint32(c.bits)
+}
+
+func (c Cell) Uint64() uint64 {
+	return c.bits
+}
+
+func (c Cell) Float32() float32 {
+	return math.Float32frombits(uint32(c.bits))
+}
+
+func (c Cell) Float64() float64 {
+	return math.Float64frombits(c.bits)
+}
+
+func (c Cell) String() string {
+	return c.binary
+}
+
+func (c Cell) Time() time.Time {
+	return time.Time{}
+}
+
+func (c Cell) Timestamp() timestamp.Timestamp {
+	return timestamp.Timestamp{}
+}
+
+func (c Cell) AsInterface() interface{} {
+	switch c.kind {
+	case reflect.Bool:
+		return c.Bool()
+	case reflect.Int32:
+		return c.Int32()
+	case reflect.Int64:
+		return c.Int64()
+	case reflect.Uint32:
+		return c.Uint32()
+	case reflect.Uint64:
+		return c.Uint64()
+	case reflect.Float32:
+		return c.Float32()
+	case reflect.Float64:
+		return c.Float64()
+	case reflect.String:
+		return c.binary
+	}
+	return nil
+}
+
+func (c Cell) BitsAsString() string {
+	switch c.kind {
+	case reflect.Bool:
+		return strconv.FormatBool(c.Bool())
+	case reflect.Int32:
+		return strconv.FormatInt(int64(c.Int32()), 10)
+	case reflect.Int64:
+		return strconv.FormatInt(c.Int64(), 10)
+	case reflect.Uint32:
+		return strconv.FormatUint(uint64(c.Uint32()), 10)
+	case reflect.Uint64:
+		return strconv.FormatUint(c.Uint64(), 10)
+	case reflect.Float32:
+		return fmt.Sprint(c.Float32())
+	case reflect.Float64:
+		return fmt.Sprint(c.Float64())
 	default:
-		//mapping enums
-		if field.Kind() == reflect.Int32 {
-			v.castVal("enum")
-			field.SetInt(v.intVal)
-		}
-	}
-	// TODO, return errors for more faulty conversions, for example, invalid string to int
-	// As on now, errors are reurn for invalid datetime
-	if v.err != nil {
-		return v.err
-	} else {
-		return nil
+		return ""
 	}
 }
 
-func (v *Value) castVal(respType string) {
-	switch respType {
-	case "int":
-		v.castInt(false)
-	case "enum":
-		v.castInt(true)
-	case "uint":
-		v.castUint()
-	case "float":
-		v.castFLoat()
-	case "string":
-		v.castString()
-	case "bool":
-		v.castBool()
-	case "timestamp":
-		v.castTimestamp()
+func (c Cell) SetInt(v reflect.Value) error {
+	if c.isNull {
+		return NullSet
 	}
+	if v.OverflowInt(c.Int64()) {
+		return OverflowErr(c.Int64(), v.Type())
+	}
+	v.SetInt(c.Int64())
+	return nil
 }
 
-func (v *Value) castInt(isEnum bool) {
-	switch v.ivalue.(type) {
-	case int, int8, int16, int32, int64:
-		v.intVal = v.rvalue.Int()
-	case uint, uint8, uint16, uint32, uint64:
-		v.intVal = int64(v.rvalue.Uint())
-	case float32, float64:
-		v.intVal = int64(v.rvalue.Float())
-	case string:
-		if isEnum {
-			valuesMapName := v.rfield.Type().Name()
-			enumVal := reflect.ValueOf(v.ivalue).String()
-			//Get the enums from registered proto enumse
-			if intVal, found := EnumVals[valuesMapName][enumVal]; found {
-				v.intVal = int64(intVal)
-			} else {
-				log.Println(EnumVals[valuesMapName])
-				log.Println(EnumVals)
-				v.err = errors.New("Value \"" + enumVal + "\" not found in " + valuesMapName + " enum.")
-			}
-		} else if s, err := strconv.Atoi(v.rvalue.String()); err == nil {
-			v.intVal = int64(s)
-		} else {
-			v.intVal = int64(0)
-		}
-	case bool:
-		if v.rvalue.Bool() {
-			v.intVal = 1
-		} else {
-			v.intVal = 0
-		}
-	case time.Time:
-		v.intVal = v.ivalue.(time.Time).Unix()
+func (c Cell) SetUint(v reflect.Value) error {
+	if c.isNull {
+		return NullSet
 	}
+	if v.OverflowUint(c.Uint64()) {
+		return OverflowErr(c.Uint64(), v.Type())
+	}
+	v.SetUint(c.Uint64())
+	return nil
 }
 
-func (v *Value) castUint() {
-	switch v.ivalue.(type) {
-	case int, int8, int16, int32, int64:
-		v.uintVal = uint64(v.rvalue.Int())
-	case uint, uint8, uint16, uint32, uint64:
-		v.uintVal = v.rvalue.Uint()
-	case float32, float64:
-		v.uintVal = uint64(v.rvalue.Float())
-	case string:
-		if s, err := strconv.Atoi(v.rvalue.String()); err == nil {
-			v.uintVal = uint64(s)
-		} else {
-			v.uintVal = uint64(0)
-		}
-	case bool:
-		if v.rvalue.Bool() {
-			v.uintVal = uint64(1)
-		} else {
-			v.uintVal = uint64(0)
-		}
-	case time.Time:
-		v.uintVal = uint64(v.ivalue.(time.Time).Unix())
+func (c Cell) SetFloat(v reflect.Value) error {
+	if c.isNull {
+		return NullSet
 	}
+	if v.OverflowFloat(c.Float64()) {
+		return OverflowErr(c.Float64(), v.Type())
+	}
+	v.SetFloat(c.Float64())
+	return nil
 }
 
-func (v *Value) castFLoat() {
-	switch v.ivalue.(type) {
-	case int, int8, int16, int32, int64:
-		v.floatVal = float64(v.rvalue.Int())
-	case uint, uint8, uint16, uint32, uint64:
-		v.floatVal = float64(v.rvalue.Uint())
-	case float32, float64:
-		v.floatVal = v.rvalue.Float()
-	case string:
-		if s, err := strconv.Atoi(v.rvalue.String()); err == nil {
-			v.floatVal = float64(s)
-		} else {
-			v.floatVal = float64(0)
-		}
-	case bool:
-		if v.rvalue.Bool() {
-			v.floatVal = float64(1)
-		} else {
-			v.floatVal = float64(0)
-		}
-	case time.Time:
-		v.floatVal = float64(v.ivalue.(time.Time).Unix())
+func (c Cell) SetBool(v reflect.Value) error {
+	if c.isNull {
+		return NullSet
 	}
+	v.SetBool(c.Bool())
+	return nil
 }
 
-func (v *Value) castString() {
-	switch v.ivalue.(type) {
-	case int, int8, int16, int32, int64:
-		v.strVal = strconv.FormatInt(v.rvalue.Int(), 10)
-	case uint, uint8, uint16, uint32, uint64:
-		v.strVal = strconv.FormatUint(v.rvalue.Uint(), 10)
-	case float32, float64:
-		v.strVal = strconv.FormatFloat(v.rvalue.Float(), 'E', -1, 64)
-	case string:
-		v.strVal = v.rvalue.String()
-	case bool:
-		if v.rvalue.Bool() {
-			v.strVal = "true"
-		} else {
-			v.strVal = "false"
-		}
-	case time.Time:
-		v.strVal = v.ivalue.(time.Time).String()
+func (c Cell) SetString(v reflect.Value) error {
+	if c.isNull {
+		return NullSet
 	}
+	v.SetString(c.String())
+	return nil
 }
 
-func (v *Value) castBool() {
-	switch v.ivalue.(type) {
-	case int, int8, int16, int32, int64:
-		if v.rvalue.Int() == 0 {
-			v.boolVal = false
-		} else {
-			v.boolVal = true
-		}
-	case uint, uint8, uint16, uint32, uint64:
-		if v.rvalue.Uint() == uint64(0) {
-			v.boolVal = false
-		} else {
-			v.boolVal = true
-		}
-	case float32, float64:
-		if v.rvalue.Float() == float64(0) {
-			v.boolVal = false
-		} else {
-			v.boolVal = true
-		}
-	case string:
-		if v.rvalue.String() == "" {
-			v.boolVal = false
-		} else {
-			v.boolVal = true
-		}
-	case bool:
-		v.boolVal = v.rvalue.Bool()
-	case time.Time:
-		v.boolVal = true
-	}
+func (c Cell) SetTime(v reflect.Value) error {
+	return nil
 }
 
-func (v *Value) castTimestamp() {
-	switch v.ivalue.(type) {
-	case time.Time:
-		if sqlTime, err := ptypes.TimestampProto(v.ivalue.(time.Time)); err == nil {
-			v.timeVal = reflect.ValueOf(sqlTime)
-		} else {
-			v.timeVal = reflect.ValueOf(ptypes.TimestampNow())
-			v.err = err
-		}
-	default:
-		v.timeVal = reflect.ValueOf(ptypes.TimestampNow())
-		v.err = errors.New(fmt.Sprintf(
-			"cannot convert %s of type %s to time.Time",
-			v.ivalue, reflect.TypeOf(v.ivalue),
-		))
-	}
+func (c Cell) SetTimestamp(v reflect.Value) error {
+	return nil
+}
+func (c Cell) SetNullBool(v reflect.Value) error {
+	return nil
+}
+func (c Cell) SetNullFloat64(v reflect.Value) error {
+	return nil
+}
+func (c Cell) SetNullInt32(v reflect.Value) error {
+	return nil
+}
+func (c Cell) SetNullInt64(v reflect.Value) error {
+	return nil
+}
+func (c Cell) SetNullString(v reflect.Value) error {
+	return nil
+}
+func (c Cell) SetNullTime(v reflect.Value) error {
+	return nil
 }
