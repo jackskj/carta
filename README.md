@@ -48,7 +48,7 @@ carta.Map(rows, &blogs)
 
 ## Installation 
 ```
-go get -u github.com/jackskj/protoc-gen-map
+go get -u github.com/jackskj/carta
 ```
 
 
