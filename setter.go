@@ -4,38 +4,35 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	// "time
+	// "github.com/golang/protobuf/ptypes/timestamp"
 )
 
-func (s *Mapper) subMapByIndex(resp reflect.Value, i int) interface{} {
-	// resp must apways be *[]intefacer{}
-	return nil
-}
-
-func (s *Mapper) set(dst reflect.Value, v interface{}, fieldIndex int) error {
-	if err := s.FieldLoaders[fieldIndex](dst, v); err != nil {
-		return err
-	}
-	return nil
-}
-
-func NonSlinceGrowError(typ reflect.Type) error {
-	return fmt.Errorf("carta: Multiple mappings were found for non-slice type, %T. A portion of returned sql data is therefore omitted. Consider debugging your query, verifying your sql relational integrity, or chaging the type to a slice.", typ)
-}
-
-// If a new mapping has been foing, grow will instantiate a new instance our type and append it
-func (s *Mapper) grow(dst reflect.Value) (interface{}, error) {
-	if s.Crd == Association {
-		// Grow is tricky for structs, invocation of this function where cardinality is association more then once indicates either user's mistake or broker referencial integrity
-		// To explain, if a user asks to map sql response to *User, he/she expects only one user
-		// However, if carta calls of this function more thank once, it indicates that carta logic determined that the sql response actually would map to many Users,
-		if s.IsMapped == false {
-			// ss.IsMapped = true
-			// if dst.IsNil
-			return dst, dst, nil
+// If a new mapping has been foind, grow will instantiate a new instance our type and append it
+func (m *Mapper) grow(dst reflect.Value) reflect.Value {
+	if m.Crd == Association {
+		if m.IsTypePtr {
+			reflect.Indirect(dst).Set(reflect.Zero(m.Typ))
 		}
-		return nil, nil, NonSlinceGrowError(ss.typ)
+		return dst
+	} else if m.Crd == Collection {
+		// if cardinaloty is a collection, the arrading destination MUST be a pointer to a slice
+		var newDst reflect.Value
+		if m.IsTypePtr {
+			newDst = reflect.New(m.Typ)
+		} else {
+			newDst = reflect.Zero(m.Typ)
+		}
+		indirectSlice := reflect.Indirect(dst)
+		indirectSlice = reflect.Append(indirectSlice, newDst)
+		if m.IsTypePtr {
+			return newDst
+		} else {
+			return newDst.Addr()
+		}
 	}
-
+	// should never happen
+	return dst
 }
 
 var NullLoad = errors.New("Null value cannot be loaded, use sql.NullX type")
@@ -48,36 +45,6 @@ func determineBasicLoaderFunc(m *Mapper) error {
 	return nil
 }
 
-func determineLoaderFuncs(m *Mapper) error {
-	var (
-		err error
-		lf  loadFunc
-	)
-	if m.IsBasic {
-		return determineBasicLoaderFunc(m)
-	}
-	for _, c := range m.PresentColumns {
-		if lf, err = getLoaderFunc(m.Typ, c); err != nil {
-			return err
-		}
-		m.FieldLoaders[c.fieldIndex] = lf
-	}
-	return nil
-}
-
-func getLoaderFunc(t reflect.Type, c column) (loadFunc, error) {
-	isTypePtr := false
-	//basic mapper logic here
-
-	if t.Kind() == reflect.Ptr {
-		isTypePtr = true
-		t = t.Elem()
-	}
-	fieldType := t.Field(c.fieldIndex).Type()
-	return nil, nil
-
-}
-
 var dbTypes = map[string]reflect.Kind{
 	"VARCHAR":  reflect.String,
 	"TEXT":     reflect.String,
@@ -86,17 +53,4 @@ var dbTypes = map[string]reflect.Kind{
 	"BOOL":     reflect.Bool,
 	"INT":      reflect.Int32,
 	"BIGINT":   reflect.Int64,
-}
-
-func determineSetFunc(ftyp reflect.Type, sqlTyp reflect.Type) loadFunc {
-	switch sqlType {
-	case reflect.String:
-		if ftyp.Kind() == reflect.String {
-			return setString
-		}
-		if ftyp == sql.NullString {
-			return setString
-		}
-	}
-	return nil
 }

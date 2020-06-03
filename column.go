@@ -57,3 +57,6 @@ func getColumnNameCandidates(fieldName string, ancestorNames []string) map[strin
 	}
 	return candidates
 }
+
+func getColumnGoType(cTyp *sql.ColumnType) {
+}

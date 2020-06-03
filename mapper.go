@@ -5,9 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
-	"time"
-
-	"github.com/golang/protobuf/ptypes/timestamp"
 )
 
 const (
@@ -25,7 +22,8 @@ const (
 	Collection
 )
 
-type loadFunc func(v reflect.Value, dst interface{}) error
+type loadFunc func(src reflect.Value, dst interface{}) error
+type convertFunc func(v interface{}) (reflect.Value, error)
 
 type Mapper struct {
 	Crd Cardinality //
@@ -42,12 +40,14 @@ type Mapper struct {
 	//        UserBlog  []*Blog          // this is NOT a basic mapper
 	// }
 	// basic can only be true if cardinality is collection
-	IsBasic     bool
-	BasicLoader loadFunc
+	IsBasic        bool
+	BasicConverter convertFunc
 
-	Typ          reflect.Type     // Underlying type to be mapped
-	IsTypePtr    bool             // is the underlying type pointed to
-	FieldLoaders map[int]loadFunc // setters for each fields, int is the i'th struct field
+	Typ  reflect.Type // Underlying type to be mapped
+	Kind reflect.Kind // Underlying Kind to be mapped
+
+	IsTypePtr  bool                // is the underlying type pointed to
+	Converters map[int]convertFunc // setters for each fields, int is the i'th struct field
 
 	// Columns of the SQL response which are present in this struct
 	PresentColumns map[string]column
@@ -98,6 +98,8 @@ func Map(rows *sql.Rows, dst interface{}) error {
 		if isSlicePtr(dstTyp) || isStructPtr(dstTyp) {
 			return fmt.Errorf("carta: cannot map rows onto %T, destination must be pointer to a slice(*[]) or pointer to struct", dstTyp)
 		}
+		// return errors.New("carta: destination pointer is nill, instantiate a new empty instance of destination before mapping")
+		// }
 
 		// generate new mapper
 		if mapper, err = newMapper(dstTyp); err != nil {
@@ -121,9 +123,9 @@ func Map(rows *sql.Rows, dst interface{}) error {
 			return err
 		}
 
-		if err = determineLoaderFuncs(mapper); err != nil {
-			return err
-		}
+		// if err = determineConvertFunc(mapper); err != nil {
+		// return err
+		// }
 
 		mapperCache.storeMap(columns, dstTyp, mapper)
 	}
@@ -178,8 +180,10 @@ func newMapper(t reflect.Type) (*Mapper, error) {
 		IsTypePtr: isTypePtr,
 	}
 
+	if subMaps, err = findSubMaps(mapper.Typ); err != nil {
+		return nil, err
+	}
 	mapper.SubMaps = subMaps
-
 	return mapper, nil
 }
 
@@ -282,26 +286,4 @@ func isStructPtr(t reflect.Type) bool {
 }
 func isSlicePtr(t reflect.Type) bool {
 	return t.Kind() == reflect.Ptr && t.Elem().Kind() == reflect.Slice
-}
-
-var basicKinds = map[reflect.Kind]bool{
-	reflect.Float64: true,
-	reflect.Float32: true,
-	reflect.Int32:   true,
-	reflect.Uint32:  true,
-	reflect.Int64:   true,
-	reflect.Uint64:  true,
-	reflect.Bool:    true,
-	reflect.String:  true,
-}
-
-var basicTypes = map[reflect.Type]bool{
-	reflect.TypeOf(time.Time{}):           true,
-	reflect.TypeOf(timestamp.Timestamp{}): true,
-	reflect.TypeOf(sql.NullBool{}):        true,
-	reflect.TypeOf(sql.NullFloat64{}):     true,
-	reflect.TypeOf(sql.NullInt32{}):       true,
-	reflect.TypeOf(sql.NullInt64{}):       true,
-	reflect.TypeOf(sql.NullString{}):      true,
-	reflect.TypeOf(sql.NullTime{}):        true,
 }

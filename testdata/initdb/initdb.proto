@@ -1,0 +1,75 @@
+syntax="proto3";
+
+package initdb;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/jackskj/carta/testdata/initdb;initdb";
+
+service InitService {
+  rpc InitDB (InitRequest) returns (EmptyResponse) {}
+  rpc InsertAuthor (InsertAuthorRequest) returns (EmptyResponse) {}
+  rpc InsertBlog (InsertBlogRequest) returns (EmptyResponse) {}
+  rpc InsertComment (InsertCommentRequest) returns (EmptyResponse) {}
+  rpc InsertPost (InsertPostRequest) returns (EmptyResponse) {}
+  rpc InsertPostTag (InsertPostTagRequest) returns (EmptyResponse) {}
+  rpc InsertTag (InsertTagRequest) returns (EmptyResponse) {}
+}
+message Meta { 
+  string db = 1;
+}
+
+message InsertAuthorRequest {
+  Meta meta = 1;
+  uint32 id = 2;
+  string username = 3;
+  string password = 4;
+  string email = 5;
+  string bio = 6;
+  string favourite_section = 7;
+}
+
+message InsertBlogRequest {
+  Meta meta = 1;
+  uint32 id = 2;
+  string title = 3;
+  uint32 author_id= 4;
+}
+
+message InsertCommentRequest {
+  Meta meta = 1;
+  uint32 id = 2;
+  uint32 post_id = 3;
+  string name = 4;
+  string comment = 5;
+}
+
+message InsertPostRequest {
+  Meta meta = 1;
+  uint32 id = 2;
+  uint32 author_id = 3;
+  uint32 blog_id = 4;
+  google.protobuf.Timestamp created_on = 5;
+  string section = 6;
+  string subject = 7;
+  string draft = 8;
+  string body = 9;
+}
+
+message InsertPostTagRequest {
+  Meta meta = 1;
+  uint32 post_id = 2;
+  uint32 tag_id = 3;
+}
+
+message InsertTagRequest {
+  Meta meta = 1;
+  uint32 id = 2;
+  string name = 3;
+}
+
+message EmptyResponse {}
+
+message InitRequest { 
+  Meta meta = 1;
+}

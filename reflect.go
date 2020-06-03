@@ -12,17 +12,19 @@ import (
 	"github.com/golang/protobuf/ptypes/timestamp"
 )
 
-// TODO:  int/float/uint/bool from binary
-// TODO:  timestamp/time/ NillXXX
+// TODO:  timestamp/time/ from string
+// NillXXX  from bits or binary
+
+// TODOLater:  int/float/uint/bool from string
 
 type Cell struct {
-	kind   reflect.Kind
-	bits   uint64 //IEEE 754 binary representation of numeric value
-	binary string // non-numeric data as bytes
+	kind   reflect.Kind // data type with which Cell will be instantiated
+	bits   uint64       //IEEE 754 binary representation of numeric value
+	binary string       // non-numeric data as bytes
 	isNull bool
 }
 
-var NullSet = errors.New("NULL value load cannot be set")
+var NullSet = errors.New("NULL value cannot be set")
 
 func NewBool(c bool) Cell {
 	if c {
@@ -273,3 +275,85 @@ func (c Cell) SetNullString(v reflect.Value) error {
 func (c Cell) SetNullTime(v reflect.Value) error {
 	return nil
 }
+
+// func determineConvertFunc(m *Mapper) error {
+// var conv convertFunc
+// for _, c := range m.PresentColumns {
+// sourceKind := getColumnGoType(c.typ)
+// conv = func(v interface{}) (interface{}, error) {
+// var c Cell
+// switch sourceKind {
+// case reflect.Bool:
+// c = NewBool(v.(bool))
+// case reflect.Float32:
+// c = NewFloat32(v.(float32))
+// case reflect.Float64:
+// c = NewFloat64(v.(float64))
+// case reflect.Int32:
+// c = NewInt32(v.(int32))
+// case reflect.Uint32:
+// c = NewUint32(v.(uint32))
+// case reflect.Int64:
+// c = NewInt64(v.(int64))
+// case reflect.Uint64:
+// c = NewUint64(v.(uint64))
+// case reflect.String:
+// c = NewString(v.(string))
+// case reflect.Int:
+// c = NewInt(v.(int))
+// case reflect.Uint:
+// c = NewUint(v.(uint))
+// }
+// if dstKind != reflect.Struct {
+// switch dstKind {
+// case reflect.Bool:
+// return c.Bool(), nil
+// case reflect.Float32:
+// return c.Float32(), nil
+// case reflect.Float64:
+// return c.Float64(), nil
+// case reflect.Int32:
+// return c.Int32(), nil
+// case reflect.Uint32:
+// return c.Uint32(), nil
+// case reflect.Int64:
+// return c.Int64(), nil
+// case reflect.Uint64:
+// return c.Uint64(), nil
+// case reflect.String:
+// return c.String(), nil
+// case reflect.Int:
+// return c.Int(), nil
+// case reflect.Uint:
+// return c.Uint(), nil
+// }
+// } else {
+// switch dstTyp {
+// case basicTypesByName["Time"]:
+// return c.Time()
+// case basicTypesByName["Timestamp"]:
+// return c.Timestamp()
+// case basicTypesByName["NullBool"]:
+// return c.NullBool()
+// case basicTypesByName["NullFloat64"]:
+// return c.NullFloat64()
+// case basicTypesByName["NullInt32"]:
+// return c.NullInt32()
+// case basicTypesByName["NullInt64"]:
+// return c.NullInt64()
+// case basicTypesByName["NullString"]:
+// return c.NullString()
+// case basicTypesByName["NullTime"]:
+// return c.NullTime()
+// }
+// }
+// return nil, fmt.Errorf("carta: error canverting from %T to %T", sourceTyp, dstTyp)
+// }
+// if m.IsBasic {
+// m.BasicConverter = conv
+// } else {
+// m.Converters = append(m.Converters, conv)
+// }
+// }
+// return nil
+// }

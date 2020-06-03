@@ -3,14 +3,16 @@ package carta
 import (
 	"database/sql"
 	"fmt"
-	"log"
+	// "log"
+	"reflect"
 )
 
 func (m *Mapper) loadRows(rows *sql.Rows, dst interface{}) error {
 	defer rows.Close() // may not need
 	var err error
-	row := make([]interface{}, len(m.columns))
+	row := make([]interface{}, len(m.PresentColumns))
 	rsv := newResolver()
+	dstV := reflect.ValueOf(dst)
 	for rows.Next() {
 		// for i, _ := range row {
 		// row[i] =interface{}{}
@@ -18,45 +20,49 @@ func (m *Mapper) loadRows(rows *sql.Rows, dst interface{}) error {
 		if err = rows.Scan(row...); err != nil {
 			return err
 		}
-		if err = loadRow(m.SqlMap, row, dst, rsv); err != nil {
+		if err = loadRow(m, row, dstV, rsv); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func loadRow(m *Mapper, row []interface{}, resp interface{}, rsv *resolver) error {
-	var err error
-	// todo: explain difference between resp and dst
-	var dst interface{}
+func loadRow(m *Mapper, row []interface{}, dst reflect.Value, rsv *resolver) error {
+	var (
+		err      error
+		srcV     reflect.Value // whatever value sql gives in one cell
+		dstField reflect.Value // destination to be set with dstV
+	)
 
 	uid := getUniqueId(row, m)
 	if cachedDst, ok := rsv.Load(uid); ok {
+		// mapping of this object has already happened
+		// this is is either due to has-many relationship or duplicate row
 		dst = cachedDst
 	} else {
-		// uniqur row mapping found
-		// example if resp is *[]*User, dst is *User
-		// after this block, grow will append new *User and return that *User as dst
-		resp, dst, err = m.grow(resp)
-		if growErr, ok := err.(NonSlinceGrowError); ok {
-			log.Println(growErr.Error()) // not breaking, but sql and/or expected response is incorrect
-			// todo: consider this breaking, and simply return err
-			return nil
-		} else if err != nil {
-			return err
-		}
-
+		// uniqur row mapping found, new object
+		// example if destination is []*User
+		// grow() will return append a new zero value to the slice, and return that value to be set
+		dst = m.grow(dst)
 		for _, field := range m.PresentColumns {
-			if err := m.set(dst, row[field.columnIndex], field.fieldIndex); err != nil {
-				return err
+			if m.IsBasic {
+				// if v, err = m.BasicConverter(srcV); err != nil {
+				// return err
+				// }
+				dstField = dst
+			} else {
+				// if v, err = m.Converters[field.fieldIndex](srcV); err != nil {
+				// return err
+				// }
+				dstField = dst.Field(field.fieldIndex)
 			}
+			srcV = reflect.ValueOf(row[field.columnIndex])
+			dstField.Set(srcV)
 		}
-		rsv.Store(uid, dst)
 	}
-
+	rsv.Store(uid, dst)
 	for i, subMap := range m.SubMaps {
-		subMapDst := m.subMapByIndex(resp, i)
-		if err := loadRow(subMap, row, subMapDst, rsv); err != nil {
+		if err = loadRow(subMap, row, dst.Field(i), rsv); err != nil {
 			return err
 		}
 	}
@@ -83,40 +89,4 @@ func getUniqueId(row []interface{}, m *Mapper) string {
 	}
 
 	return out
-}
-
-// Resolver determines whether an object has already appeared in past rows.
-// ie, if a set of column values was previously returned by SQL,
-// this is nececaty to determine whether a new instantiation of a type is necesarry
-// Carta uses all present columns in a particular message to generate a unique id,
-// if successive rows have the same id, it identifies the same element
-// always include a uniquely identifiable column in your query
-// resolver cannot be stored in pointer reciver, this would result in concurrency bugs,
-//
-// for example, if user requests mapping to *[]*User  where
-// type User  struct {
-// userId int
-// Addresses []*Address
-// }
-// if sql query returns multiple rows with the same userId, resolver will return
-// a pointer to the *User with that id so that furhter mapping can continue, in this case, mapping of address
-//
-// TODO: consider passing resover in context value
-type resolver struct {
-	uniqueIds map[string]interface{}
-}
-
-func newResolver() *resolver {
-	return &resolver{
-		uniqueIds: map[string]interface{}{},
-	}
-}
-
-func (r *resolver) Load(uid string) (cachedDst interface{}, ok bool) {
-	cachedDst, ok = r.uniqueIds[uid]
-	return
-}
-
-func (r *resolver) Store(uid string, dst interface{}) {
-	r.uniqueIds[uid] = dst
 }
