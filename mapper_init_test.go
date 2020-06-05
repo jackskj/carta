@@ -15,8 +15,8 @@ import (
 	"time"
 
 	"github.com/golang/protobuf/jsonpb"
+	"github.com/jackskj/carta"
 	// "github.com/golang/protobuf/proto"
-	// "github.com/jackskj/carta"
 	td "github.com/jackskj/carta/testdata"
 	"github.com/jackskj/carta/testdata/initdb"
 	diff "github.com/yudai/gojsondiff"
@@ -56,7 +56,7 @@ func setup() {
 	grpcServer = grpc.NewServer()
 	dbs = map[string]*sql.DB{
 		"postgres": td.GetPG(),
-		"mysql":    td.GetMySql(),
+		// "mysql":    td.GetMySql(),
 	}
 
 	initdb.RegisterInitServiceServer(grpcServer, &initdb.InitServiceMapServer{DBs: dbs})
@@ -102,22 +102,34 @@ func createDatabase(dbs map[string]*sql.DB) {
 		initService := initdb.NewInitServiceClient(conn)
 		initService.InitDB(ctx, &initdb.InitRequest{Meta: &initdb.Meta{Db: dbName}})
 		for i := 0; i < len(requests.InsertAuthorRequests); i++ {
-			initService.InsertAuthor(ctx, requests.InsertAuthorRequests[i])
+			if _, err := initService.InsertAuthor(ctx, requests.InsertAuthorRequests[i]); err != nil {
+				log.Fatalf("InsertAuthor: %s", err)
+			}
 		}
 		for i := 0; i < len(requests.InsertBlogRequests); i++ {
-			initService.InsertBlog(ctx, requests.InsertBlogRequests[i])
+			if _, err := initService.InsertBlog(ctx, requests.InsertBlogRequests[i]); err != nil {
+				log.Fatalf("InsertBlog: %s", err)
+			}
 		}
 		for i := 0; i < len(requests.InsertCommentRequests); i++ {
-			initService.InsertComment(ctx, requests.InsertCommentRequests[i])
+			if _, err := initService.InsertComment(ctx, requests.InsertCommentRequests[i]); err != nil {
+				log.Fatalf("InsertComment: %s", err)
+			}
 		}
 		for i := 0; i < len(requests.InsertPostRequests); i++ {
-			initService.InsertPost(ctx, requests.InsertPostRequests[i])
+			if _, err := initService.InsertPost(ctx, requests.InsertPostRequests[i]); err != nil {
+				log.Fatalf("InsertPost: %s", err)
+			}
 		}
 		for i := 0; i < len(requests.InsertPostTagRequests); i++ {
-			initService.InsertPostTag(ctx, requests.InsertPostTagRequests[i])
+			if _, err := initService.InsertPostTag(ctx, requests.InsertPostTagRequests[i]); err != nil {
+				log.Fatalf("InsertPostTag: %s", err)
+			}
 		}
 		for i := 0; i < len(requests.InsertTagRequests); i++ {
-			initService.InsertTag(ctx, requests.InsertTagRequests[i])
+			if _, err := initService.InsertTag(ctx, requests.InsertTagRequests[i]); err != nil {
+				log.Fatalf("InsertTag: %s", err)
+			}
 		}
 	}
 }
@@ -167,4 +179,23 @@ func teardown() {
 
 func bufDialer(string, time.Duration) (net.Conn, error) {
 	return lis.Dial()
+}
+
+func TestSimple(m *testing.T) {
+	var (
+		rows *sql.Rows
+		err  error
+	)
+	pgdb := dbs["postgres"]
+	if err = pgdb.Ping(); err != nil {
+		log.Fatal(err)
+	}
+	if rows, err = pgdb.Query("select * from blog "); err != nil {
+		log.Fatal(rows.Err())
+	}
+	resp := []td.Blog{}
+	if err := carta.Map(rows, &resp); err != nil {
+		log.Fatal(err)
+	}
+	log.Println(resp)
 }

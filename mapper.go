@@ -4,7 +4,10 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"log"
 	"reflect"
+
+	"github.com/jackskj/carta/value"
 )
 
 const (
@@ -95,7 +98,7 @@ func Map(rows *sql.Rows, dst interface{}) error {
 	if ok {
 		return mapper.loadRows(rows, dst)
 	} else {
-		if isSlicePtr(dstTyp) || isStructPtr(dstTyp) {
+		if !(isSlicePtr(dstTyp) || isStructPtr(dstTyp)) {
 			return fmt.Errorf("carta: cannot map rows onto %T, destination must be pointer to a slice(*[]) or pointer to struct", dstTyp)
 		}
 		// return errors.New("carta: destination pointer is nill, instantiate a new empty instance of destination before mapping")
@@ -147,11 +150,11 @@ func newMapper(t reflect.Type) (*Mapper, error) {
 
 	if isSlicePtr(t) {
 		crd = Collection
-		elemTyp = t.Elem() // []interface{} to intetrface{}
+		elemTyp = t.Elem().Elem() // *[]interface{} to intetrface{}
 		isListPtr = true
 	} else if t.Kind() == reflect.Slice {
 		crd = Collection
-		elemTyp = t.Elem().Elem() // *[]interface{} to intetrface{}
+		elemTyp = t.Elem() // []interface{} to intetrface{}
 
 	}
 
@@ -226,6 +229,10 @@ func determineFieldsNames(m *Mapper, ancestorNames []string) error {
 		t = m.Typ
 	}
 
+	if t.Kind() != reflect.Struct {
+		log.Fatal(m)
+	}
+
 	for i := 0; i < t.NumField(); i++ {
 		field := t.Field(i)
 		if isExported(field) {
@@ -247,6 +254,18 @@ func determineFieldsNames(m *Mapper, ancestorNames []string) error {
 		}
 	}
 	return nil
+}
+
+// grow is pretty much an append function,
+// dst must always be a pointer, if it is a pointer to slice
+func (m *Mapper) grow(dst reflect.Value, newElem reflect.Value) reflect.Value {
+	dstIndirect := reflect.Indirect(dst)
+	if m.IsTypePtr {
+		dstIndirect.Set(reflect.Append(dstIndirect, newElem.Addr()))
+	} else {
+		dstIndirect.Set(reflect.Append(dstIndirect, newElem))
+	}
+	return dst
 }
 
 func isExported(f reflect.StructField) bool {
@@ -271,10 +290,10 @@ func isBasicType(t reflect.Type) bool {
 	if t.Kind() == reflect.Ptr {
 		t = t.Elem()
 	}
-	if _, ok := basicKinds[t.Kind()]; ok {
+	if _, ok := value.BasicKinds[t.Kind()]; ok {
 		return true
 	}
-	if _, ok := basicTypes[t]; ok {
+	if _, ok := value.BasicTypes[t]; ok {
 		return true
 	}
 	return false

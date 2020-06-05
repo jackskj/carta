@@ -1,4 +1,4 @@
-package carta
+package value
 
 import (
 	"database/sql"
@@ -32,7 +32,7 @@ const (
 	String
 )
 
-var basicKinds = map[reflect.Kind]bool{
+var BasicKinds = map[reflect.Kind]bool{
 	reflect.Float64: true,
 	reflect.Float32: true,
 	reflect.Int32:   true,
@@ -43,7 +43,7 @@ var basicKinds = map[reflect.Kind]bool{
 	reflect.String:  true,
 }
 
-var basicTypes = map[reflect.Type]bool{
+var BasicTypes = map[reflect.Type]bool{
 	reflect.TypeOf(time.Time{}):           true,
 	reflect.TypeOf(timestamp.Timestamp{}): true,
 	reflect.TypeOf(sql.NullBool{}):        true,
@@ -54,7 +54,7 @@ var basicTypes = map[reflect.Type]bool{
 	reflect.TypeOf(sql.NullTime{}):        true,
 }
 
-var basicTypesByName = map[Value]reflect.Type{
+var BasicTypesByName = map[Value]reflect.Type{
 	Time:        reflect.TypeOf(time.Time{}),
 	Timestamp:   reflect.TypeOf(timestamp.Timestamp{}),
 	NullBool:    reflect.TypeOf(sql.NullBool{}),

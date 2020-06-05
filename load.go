@@ -3,9 +3,13 @@ package carta
 import (
 	"database/sql"
 	"fmt"
-	// "log"
+	"log"
 	"reflect"
+
+	"github.com/jackskj/carta/value"
 )
+
+var _ = log.Fatal
 
 func (m *Mapper) loadRows(rows *sql.Rows, dst interface{}) error {
 	defer rows.Close() // may not need
@@ -14,9 +18,9 @@ func (m *Mapper) loadRows(rows *sql.Rows, dst interface{}) error {
 	rsv := newResolver()
 	dstV := reflect.ValueOf(dst)
 	for rows.Next() {
-		// for i, _ := range row {
-		// row[i] =interface{}{}
-		// }
+		for i, _ := range row {
+			row[i] = new(interface{})
+		}
 		if err = rows.Scan(row...); err != nil {
 			return err
 		}
@@ -30,36 +34,47 @@ func (m *Mapper) loadRows(rows *sql.Rows, dst interface{}) error {
 func loadRow(m *Mapper, row []interface{}, dst reflect.Value, rsv *resolver) error {
 	var (
 		err      error
-		srcV     reflect.Value // whatever value sql gives in one cell
+		newElem  reflect.Value // destination to be set with dstV
 		dstField reflect.Value // destination to be set with dstV
+		cell     value.Cell
 	)
-
 	uid := getUniqueId(row, m)
 	if cachedDst, ok := rsv.Load(uid); ok {
 		// mapping of this object has already happened
 		// this is is either due to has-many relationship or duplicate row
 		dst = cachedDst
 	} else {
-		// uniqur row mapping found, new object
-		// example if destination is []*User
-		// grow() will return append a new zero value to the slice, and return that value to be set
-		dst = m.grow(dst)
+		// unique row mapping found, new object
+		newElem = reflect.New(m.Typ).Elem()
+
 		for _, field := range m.PresentColumns {
 			if m.IsBasic {
 				// if v, err = m.BasicConverter(srcV); err != nil {
 				// return err
 				// }
-				dstField = dst
+				dstField = newElem
 			} else {
 				// if v, err = m.Converters[field.fieldIndex](srcV); err != nil {
 				// return err
 				// }
-				dstField = dst.Field(field.fieldIndex)
+				dstField = newElem.Field(field.fieldIndex)
 			}
-			srcV = reflect.ValueOf(row[field.columnIndex])
-			dstField.Set(srcV)
+			// sql.Row.Scan() requires pointers for each cell
+			srcI := row[field.columnIndex].(*interface{})
+			if srcI == nil { // sql cell is nil
+				cell = value.NewNull()
+			} else {
+				if cell, err = value.NewCell(*srcI, field.typ); err != nil {
+					return err
+				}
+			}
+			dstField.Set(reflect.ValueOf(cell.AsInterface()))
 		}
+		// grow() will return append a new zero value to the slice, and return that value to be set
+		dst = m.grow(dst, newElem)
+
 	}
+	log.Println(dst)
 	rsv.Store(uid, dst)
 	for i, subMap := range m.SubMaps {
 		if err = loadRow(subMap, row, dst.Field(i), rsv); err != nil {
@@ -85,7 +100,8 @@ func getUniqueId(row []interface{}, m *Mapper) string {
 		// TODO: Implement a more advanced and better performing hashing
 		// this can be done by dumping row values into []byte by using
 		// sql.driver.valuer interface
-		out = out + fmt.Sprintf("%v|", row[i])
+		r := row[i].(*interface{})
+		out = out + fmt.Sprintf("%v|", *r)
 	}
 
 	return out

@@ -9,6 +9,7 @@ import (
 	"github.com/Masterminds/sprig"
 	_ "github.com/golang/protobuf/ptypes/timestamp"
 	sqlTpl "github.com/jackskj/carta/testdata/initdb/sql"
+	tpl "github.com/jackskj/protoc-gen-map/templates"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -17,7 +18,7 @@ type InitServiceMapServer struct {
 	DBs map[string]*sql.DB
 }
 
-var InitTemplate, _ = template.New("InitTemplate").Funcs(sprig.TxtFuncMap()).Parse(sqlTpl.Init)
+var InitTemplate, _ = template.New("InitTemplate").Funcs(sprig.TxtFuncMap()).Funcs(tpl.Funcs()).Parse(sqlTpl.Init)
 
 func (m *InitServiceMapServer) InitDB(ctx context.Context, r *InitRequest) (*EmptyResponse, error) {
 	sqlBuffer := &bytes.Buffer{}

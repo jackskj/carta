@@ -1,8 +1,10 @@
-package carta
+package value
 
 import (
+	"database/sql"
 	"errors"
 	"fmt"
+	"log"
 	"math"
 	"reflect"
 	"strconv"
@@ -17,6 +19,8 @@ import (
 
 // TODOLater:  int/float/uint/bool from string
 
+var _ = log.Fatal
+
 type Cell struct {
 	kind   reflect.Kind // data type with which Cell will be instantiated
 	bits   uint64       //IEEE 754 binary representation of numeric value
@@ -25,6 +29,37 @@ type Cell struct {
 }
 
 var NullSet = errors.New("NULL value cannot be set")
+
+func NewCell(v interface{}, typ *sql.ColumnType) (Cell, error) {
+	var c Cell
+	isSet := false
+
+	switch typ.DatabaseTypeName() {
+	case "VARCHAR", "TEXT", "NVARCHAR":
+		if data, ok := v.(string); ok {
+			isSet = true
+			c = NewString(data)
+		}
+	case "DECIMAL":
+		c = NewFloat64(v.(float64))
+	case "BOOL":
+		c = NewBool(v.(bool))
+	case "INT":
+		c = NewInt(v.(int))
+	case "INT4":
+		if data, ok := v.(int64); ok {
+			isSet = true
+			c = NewInt64(data)
+		}
+	case "BIGINT":
+		c = NewInt(v.(int))
+	}
+	if !isSet {
+		return Cell{}, errors.New(fmt.Sprintf("carta: unknown data type %s for column %s ", typ.DatabaseTypeName(), typ.Name()))
+	}
+	return c, nil
+
+}
 
 func NewBool(c bool) Cell {
 	if c {
