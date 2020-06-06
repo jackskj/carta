@@ -2,6 +2,7 @@ package carta
 
 import (
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -9,6 +10,8 @@ import (
 
 	"github.com/jackskj/carta/value"
 )
+
+var _ = json.Marshal
 
 const (
 	CartaTagKey string = "carta"
@@ -28,6 +31,12 @@ const (
 type loadFunc func(src reflect.Value, dst interface{}) error
 type convertFunc func(v interface{}) (reflect.Value, error)
 
+type Field struct {
+	Name string
+	Typ  reflect.Type
+	Kind reflect.Kind
+}
+
 type Mapper struct {
 	Crd Cardinality //
 
@@ -43,20 +52,22 @@ type Mapper struct {
 	//        UserBlog  []*Blog          // this is NOT a basic mapper
 	// }
 	// basic can only be true if cardinality is collection
-	IsBasic        bool
-	BasicConverter convertFunc
+	IsBasic bool
+	// BasicConverter convertFunc
 
 	Typ  reflect.Type // Underlying type to be mapped
 	Kind reflect.Kind // Underlying Kind to be mapped
 
-	IsTypePtr  bool                // is the underlying type pointed to
-	Converters map[int]convertFunc // setters for each fields, int is the i'th struct field
+	IsTypePtr bool // is the underlying type pointed to
+	// Converters map[int]convertFunc // setters for each fields, int is the i'th struct field
 
 	// Columns of the SQL response which are present in this struct
-	PresentColumns map[string]column
+	PresentColumns      map[string]column
+	SortedColumnIndexes []int
 
 	// Columns of all parents structs, used to detect whether a new struct should be appended for has-many relationships
 	AncestorColumns map[string]column
+	// TODO: SortedAncestorColumns []int
 
 	// when reusing the same struct multiple times, you are able to specify the colimn prefix using parent structs
 	// example
@@ -70,12 +81,13 @@ type Mapper struct {
 	// the following querry would correctly map if we were mapping to *[]Manager
 	// "select id, employees_id from employees join managers"
 	// employees_ is the prefix of the parent (lower case of the parent with "_")
-	FieldNames    map[int]string
+	// FieldNames    map[int]string
+	Fields        map[fieldIndex]Field
 	AncestorNames []string
 
 	// Nested structs which correspond to any has-one has-many relationships
 	// int is the ith element of this struct where the submap exists
-	SubMaps map[int]*Mapper
+	SubMaps map[fieldIndex]*Mapper
 }
 
 // Maps db rows onto the complex struct,
@@ -84,6 +96,7 @@ func Map(rows *sql.Rows, dst interface{}) error {
 	var (
 		mapper *Mapper
 		err    error
+		rsv    *resolver
 	)
 	columns, err := rows.Columns()
 	if err != nil {
@@ -95,11 +108,9 @@ func Map(rows *sql.Rows, dst interface{}) error {
 	}
 	dstTyp := reflect.TypeOf(dst)
 	mapper, ok := mapperCache.loadMap(columns, dstTyp)
-	if ok {
-		return mapper.loadRows(rows, dst)
-	} else {
+	if !ok {
 		if !(isSlicePtr(dstTyp) || isStructPtr(dstTyp)) {
-			return fmt.Errorf("carta: cannot map rows onto %T, destination must be pointer to a slice(*[]) or pointer to struct", dstTyp)
+			return fmt.Errorf("carta: cannot map rows onto %s, destination must be pointer to a slice(*[]) or pointer to struct", dstTyp)
 		}
 		// return errors.New("carta: destination pointer is nill, instantiate a new empty instance of destination before mapping")
 		// }
@@ -126,13 +137,16 @@ func Map(rows *sql.Rows, dst interface{}) error {
 			return err
 		}
 
-		// if err = determineConvertFunc(mapper); err != nil {
-		// return err
-		// }
-
 		mapperCache.storeMap(columns, dstTyp, mapper)
+
 	}
-	return mapper.loadRows(rows, dst)
+
+	if rsv, err = mapper.loadRows(rows, len(columns)); err != nil {
+		return err
+	}
+
+	return setDst(mapper, reflect.ValueOf(dst), rsv)
+
 }
 
 func newMapper(t reflect.Type) (*Mapper, error) {
@@ -140,7 +154,7 @@ func newMapper(t reflect.Type) (*Mapper, error) {
 		crd     Cardinality
 		elemTyp reflect.Type
 		mapper  *Mapper
-		subMaps map[int]*Mapper
+		subMaps map[fieldIndex]*Mapper
 		err     error
 	)
 
@@ -153,13 +167,17 @@ func newMapper(t reflect.Type) (*Mapper, error) {
 		elemTyp = t.Elem().Elem() // *[]interface{} to intetrface{}
 		isListPtr = true
 	} else if t.Kind() == reflect.Slice {
+		crd = Association
 		crd = Collection
 		elemTyp = t.Elem() // []interface{} to intetrface{}
-
 	}
 
 	if crd == Collection {
 		isBasic = isBasicType(t)
+		if elemTyp.Kind() == reflect.Ptr {
+			elemTyp = elemTyp.Elem()
+			isTypePtr = true
+		}
 	}
 
 	if isStructPtr(t) {
@@ -182,7 +200,6 @@ func newMapper(t reflect.Type) (*Mapper, error) {
 		Typ:       elemTyp,
 		IsTypePtr: isTypePtr,
 	}
-
 	if subMaps, err = findSubMaps(mapper.Typ); err != nil {
 		return nil, err
 	}
@@ -190,12 +207,12 @@ func newMapper(t reflect.Type) (*Mapper, error) {
 	return mapper, nil
 }
 
-func findSubMaps(t reflect.Type) (map[int]*Mapper, error) {
+func findSubMaps(t reflect.Type) (map[fieldIndex]*Mapper, error) {
 	var (
 		subMap *Mapper
 		err    error
 	)
-	subMaps := map[int]*Mapper{}
+	subMaps := map[fieldIndex]*Mapper{}
 	if t.Kind() != reflect.Struct {
 		return nil, nil
 	}
@@ -205,7 +222,7 @@ func findSubMaps(t reflect.Type) (map[int]*Mapper, error) {
 			if subMap, err = newMapper(field.Type); err != nil {
 				return nil, err
 			}
-			subMaps[i] = subMap
+			subMaps[fieldIndex(i)] = subMap
 		}
 	}
 	return subMaps, nil
@@ -213,59 +230,55 @@ func findSubMaps(t reflect.Type) (map[int]*Mapper, error) {
 
 func determineFieldsNames(m *Mapper, ancestorNames []string) error {
 	var (
-		t    reflect.Type
 		name string
 	)
-	names := map[int]string{}
+	fields := map[fieldIndex]Field{}
 
 	m.AncestorNames = ancestorNames
 
 	if m.IsBasic {
 		return nil
 	}
-	if m.IsTypePtr {
-		t = m.Typ.Elem()
-	} else {
-		t = m.Typ
+	if m.Typ.Kind() != reflect.Struct {
+		log.Fatal(m.Typ)
 	}
 
-	if t.Kind() != reflect.Struct {
-		log.Fatal(m)
-	}
-
-	for i := 0; i < t.NumField(); i++ {
-		field := t.Field(i)
+	for i := 0; i < m.Typ.NumField(); i++ {
+		field := m.Typ.Field(i)
 		if isExported(field) {
 			if tag := nameFromTag(field.Tag); tag != "" {
 				name = tag
 			} else {
 				name = field.Name
 			}
-			names[i] = name
+			fields[fieldIndex(i)] = Field{
+				Name: name,
+				Typ:  field.Type,
+				Kind: field.Type.Kind(),
+			}
 		}
 	}
-	m.FieldNames = names
+	m.Fields = fields
 	if ancestorNames == nil {
 		ancestorNames = []string{}
 	}
 	for i, subMap := range m.SubMaps {
-		if err := determineFieldsNames(subMap, append(ancestorNames, names[i])); err != nil {
+		if err := determineFieldsNames(subMap, append(ancestorNames, fields[i].Name)); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-// grow is pretty much an append function,
+// grow is pretty much an append function, input is the slice and a pointer to the new element
 // dst must always be a pointer, if it is a pointer to slice
-func (m *Mapper) grow(dst reflect.Value, newElem reflect.Value) reflect.Value {
+func (m *Mapper) grow(dst reflect.Value, newElemAddr reflect.Value) {
 	dstIndirect := reflect.Indirect(dst)
 	if m.IsTypePtr {
-		dstIndirect.Set(reflect.Append(dstIndirect, newElem.Addr()))
+		dstIndirect.Set(reflect.Append(dstIndirect, newElemAddr))
 	} else {
-		dstIndirect.Set(reflect.Append(dstIndirect, newElem))
+		dstIndirect.Set(reflect.Append(dstIndirect, reflect.Indirect(newElemAddr)))
 	}
-	return dst
 }
 
 func isExported(f reflect.StructField) bool {
@@ -281,7 +294,7 @@ func isSubMap(t reflect.Type) bool {
 	if t.Kind() == reflect.Ptr {
 		t = t.Elem()
 	}
-	return (!isBasicType(t) && (t.Kind() == reflect.Struct))
+	return (!isBasicType(t) && (t.Kind() == reflect.Struct || t.Kind() == reflect.Slice))
 }
 
 // Basic types are any types that are intended to be set from sql row data

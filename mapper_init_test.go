@@ -190,12 +190,50 @@ func TestSimple(m *testing.T) {
 	if err = pgdb.Ping(); err != nil {
 		log.Fatal(err)
 	}
-	if rows, err = pgdb.Query("select * from blog "); err != nil {
+	rawQuery := `
+select
+        B.id                as  blog_id,
+        B.title             as  blog_title,
+        A.id                as  author_id,
+        A.username          as  author_username,
+        A.password          as  author_password,
+        A.email             as  author_email,
+        A.bio               as  author_bio,
+        A.favourite_section as  author_favourite_section,
+        P.id                as  post_id,
+        P.blog_id           as  post_blog_id,
+        P.author_id         as  post_author_id,
+        ---P.created_on        as  post_created_on,
+        P.section           as  post_section,
+        P.subject           as  post_subject,
+        P.draft             as  draft,
+        P.body              as  post_body,
+        C.id                as  comment_id,
+        C.post_id           as  comment_post_id,
+        C.comment           as  comment_text,
+        T.id                as  tag_id,
+        T.name              as  tag_name
+from blog B
+        left outer join author A    on  B.author_id = A.id
+        left outer join post P      on  B.id = P.blog_id
+        left outer join comment C   on  P.id = C.post_id
+        left outer join post_tag PT on  PT.post_id = P.id
+        left outer join tag T       on  PT.tag_id = T.id
+        where B.id in (1,2,3) 
+	`
+	if rows, err = pgdb.Query(rawQuery); err != nil {
 		log.Fatal(rows.Err())
 	}
-	resp := []td.Blog{}
+
+	resp := []*td.Blog{}
 	if err := carta.Map(rows, &resp); err != nil {
-		log.Fatal(err)
+		log.Fatal(err.Error())
 	}
-	log.Println(resp)
+	for _, x := range resp {
+		e, err := json.Marshal(x)
+		if err != nil {
+			log.Fatalf("as" + err.Error())
+		}
+		log.Println("a\n" + string(e))
+	}
 }
