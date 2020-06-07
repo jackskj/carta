@@ -14,7 +14,7 @@ import (
 var _ = json.Marshal
 
 const (
-	CartaTagKey string = "carta"
+	CartaTagKey string = "db"
 )
 
 // SQL Map cardinality can either be:
@@ -27,9 +27,6 @@ const (
 	Association
 	Collection
 )
-
-type loadFunc func(src reflect.Value, dst interface{}) error
-type convertFunc func(v interface{}) (reflect.Value, error)
 
 type Field struct {
 	Name string
@@ -65,10 +62,6 @@ type Mapper struct {
 	PresentColumns      map[string]column
 	SortedColumnIndexes []int
 
-	// Columns of all parents structs, used to detect whether a new struct should be appended for has-many relationships
-	AncestorColumns map[string]column
-	// TODO: SortedAncestorColumns []int
-
 	// when reusing the same struct multiple times, you are able to specify the colimn prefix using parent structs
 	// example
 	// type Employee struct {
@@ -83,7 +76,7 @@ type Mapper struct {
 	// employees_ is the prefix of the parent (lower case of the parent with "_")
 	// FieldNames    map[int]string
 	Fields        map[fieldIndex]Field
-	AncestorNames []string
+	AncestorNames []string // Field.Name of ancestors
 
 	// Nested structs which correspond to any has-one has-many relationships
 	// int is the ith element of this struct where the submap exists
@@ -121,7 +114,7 @@ func Map(rows *sql.Rows, dst interface{}) error {
 		}
 
 		// determine field names
-		if err = determineFieldsNames(mapper, nil); err != nil {
+		if err = determineFieldsNames(mapper); err != nil {
 			return err
 		}
 
@@ -129,6 +122,7 @@ func Map(rows *sql.Rows, dst interface{}) error {
 		columnsByName := map[string]column{}
 		for i, columnName := range columns {
 			columnsByName[columnName] = column{
+				name:        columnName,
 				typ:         columnTypes[i],
 				columnIndex: i,
 			}
@@ -228,13 +222,11 @@ func findSubMaps(t reflect.Type) (map[fieldIndex]*Mapper, error) {
 	return subMaps, nil
 }
 
-func determineFieldsNames(m *Mapper, ancestorNames []string) error {
+func determineFieldsNames(m *Mapper) error {
 	var (
 		name string
 	)
 	fields := map[fieldIndex]Field{}
-
-	m.AncestorNames = ancestorNames
 
 	if m.IsBasic {
 		return nil
@@ -259,26 +251,12 @@ func determineFieldsNames(m *Mapper, ancestorNames []string) error {
 		}
 	}
 	m.Fields = fields
-	if ancestorNames == nil {
-		ancestorNames = []string{}
-	}
-	for i, subMap := range m.SubMaps {
-		if err := determineFieldsNames(subMap, append(ancestorNames, fields[i].Name)); err != nil {
+	for _, subMap := range m.SubMaps {
+		if err := determineFieldsNames(subMap); err != nil {
 			return err
 		}
 	}
 	return nil
-}
-
-// grow is pretty much an append function, input is the slice and a pointer to the new element
-// dst must always be a pointer, if it is a pointer to slice
-func (m *Mapper) grow(dst reflect.Value, newElemAddr reflect.Value) {
-	dstIndirect := reflect.Indirect(dst)
-	if m.IsTypePtr {
-		dstIndirect.Set(reflect.Append(dstIndirect, newElemAddr))
-	} else {
-		dstIndirect.Set(reflect.Append(dstIndirect, reflect.Indirect(newElemAddr)))
-	}
 }
 
 func isExported(f reflect.StructField) bool {
@@ -286,8 +264,8 @@ func isExported(f reflect.StructField) bool {
 }
 
 func nameFromTag(t reflect.StructTag) string {
-	// s := t.Get(CartaTagKey)
-	return ""
+	return t.Get(CartaTagKey)
+
 }
 
 func isSubMap(t reflect.Type) bool {

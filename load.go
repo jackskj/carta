@@ -110,6 +110,7 @@ func loadRow(m *Mapper, row []interface{}, rsv *resolver) error {
 			}
 		}
 		rsv.elements[uid] = elem
+		rsv.elementOrder = append(rsv.elementOrder, uid)
 	}
 
 	for i, subMap := range m.SubMaps {

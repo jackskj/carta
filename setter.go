@@ -13,7 +13,9 @@ func setDst(m *Mapper, dst reflect.Value, rsv *resolver) error {
 	dstIndirect := reflect.Indirect(dst)
 
 	// post order traversal, first set all submap structs, then the struct itself
-	for _, elem := range rsv.elements {
+	for _, uid := range rsv.elementOrder {
+		elem := rsv.elements[uid]
+
 		//set childeren first
 		for fieldIndex, subMapRsv := range elem.subMaps {
 			var (
@@ -36,24 +38,24 @@ func setDst(m *Mapper, dst reflect.Value, rsv *resolver) error {
 			}
 
 			if subMap.Crd == Collection {
-				size := len(subMapRsv.elements)
-				if m.IsTypePtr {
+				capacity := len(subMapRsv.elements)
+				if subMap.IsTypePtr {
 					newChildElem = reflect.New(reflect.SliceOf(reflect.PtrTo(childTyp))).Elem()
-					newChildElem.Set(reflect.MakeSlice(reflect.SliceOf(reflect.PtrTo(childTyp)), size, size))
+					newChildElem.Set(reflect.MakeSlice(reflect.SliceOf(reflect.PtrTo(childTyp)), 0, capacity))
 				} else {
 					newChildElem = reflect.New(reflect.SliceOf(childTyp)).Elem()
-					newChildElem.Set(reflect.MakeSlice(reflect.SliceOf(childTyp), size, size))
+					newChildElem.Set(reflect.MakeSlice(reflect.SliceOf(childTyp), 0, capacity))
 				}
-				if m.IsListPtr {
-					elem.v.Field(int(fieldIndex)).Set(newChildElem)
+				if subMap.IsListPtr {
+					elem.v.Field(int(fieldIndex)).Set(newChildElem.Addr())
 					childDst = elem.v.Field(int(fieldIndex))
 				} else {
-					elem.v.Field(int(fieldIndex)).Set(reflect.Indirect(newChildElem))
+					elem.v.Field(int(fieldIndex)).Set(newChildElem)
 					childDst = elem.v.Field(int(fieldIndex)).Addr()
 				}
 			} else if subMap.Crd == Association {
 				newChildElem = reflect.New(childTyp).Elem()
-				if m.IsTypePtr {
+				if subMap.IsTypePtr {
 					elem.v.Field(int(fieldIndex)).Set(newChildElem.Addr())
 					childDst = elem.v.Field(int(fieldIndex))
 				} else {
@@ -67,7 +69,8 @@ func setDst(m *Mapper, dst reflect.Value, rsv *resolver) error {
 		}
 	}
 
-	for _, elem := range rsv.elements {
+	for _, uid := range rsv.elementOrder {
+		elem := rsv.elements[uid]
 		if m.Crd == Collection {
 			if m.IsTypePtr {
 				dstIndirect.Set(reflect.Append(dstIndirect, elem.v.Addr()))
@@ -75,17 +78,8 @@ func setDst(m *Mapper, dst reflect.Value, rsv *resolver) error {
 				dstIndirect.Set(reflect.Append(dstIndirect, elem.v))
 			}
 		} else if m.Crd == Association {
-
-			// loadElem := reflect.New(m.Typ).Elem()
-
-			if m.IsTypePtr {
-				reflect.Indirect(dst).Set(elem.v)
-				log.Printf("%v %v %v", dst.Type(), elem.v.Type(), dst)
-			} else {
-				reflect.Indirect(dst).Set(elem.v)
-			}
+			dstIndirect.Set(elem.v)
 		}
 	}
-
 	return nil
 }

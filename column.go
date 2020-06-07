@@ -12,6 +12,7 @@ var _ = log.Fatal
 // column represents the ith struct field of this mapper where the column is to be mapped
 type column struct {
 	typ         *sql.ColumnType
+	name        string
 	columnIndex int
 	i           fieldIndex
 }
@@ -25,8 +26,12 @@ func allocateColumns(m *Mapper, columns map[string]column) error {
 		for i, field := range m.Fields {
 			candidates = getColumnNameCandidates(field.Name, m.AncestorNames)
 			if _, ok := candidates[cName]; ok {
-				c.i = i
-				presentColumns[cName] = c
+				presentColumns[cName] = column{
+					typ:         c.typ,
+					name:        cName,
+					columnIndex: c.columnIndex,
+					i:           i,
+				}
 				delete(columns, cName) // dealocate claimed column
 			}
 		}
@@ -34,21 +39,19 @@ func allocateColumns(m *Mapper, columns map[string]column) error {
 	m.PresentColumns = presentColumns
 
 	columnIds := []int{}
-	for _, columnField := range m.PresentColumns {
-		columnIds = append(columnIds, columnField.columnIndex)
+	for _, column := range m.PresentColumns {
+		columnIds = append(columnIds, column.columnIndex)
 	}
 	sort.Ints(columnIds)
 	m.SortedColumnIndexes = columnIds
 
-	ancestorColumns := map[string]column{}
-	for columnName, column := range m.AncestorColumns {
-		ancestorColumns[columnName] = column
+	ancestorNames := []string{}
+	if len(m.AncestorNames) != 0 {
+		ancestorNames = m.AncestorNames
 	}
-	for columnName, column := range m.PresentColumns {
-		ancestorColumns[columnName] = column
-	}
-	for _, subMap := range m.SubMaps {
-		subMap.AncestorColumns = ancestorColumns
+
+	for i, subMap := range m.SubMaps {
+		subMap.AncestorNames = append(ancestorNames, m.Fields[i].Name)
 		if err := allocateColumns(subMap, columns); err != nil {
 			return err
 		}
@@ -57,8 +60,12 @@ func allocateColumns(m *Mapper, columns map[string]column) error {
 }
 
 func getColumnNameCandidates(fieldName string, ancestorNames []string) map[string]bool {
-	candidates := map[string]bool{fieldName: true, ToSnakeCase(fieldName): true}
-	if ancestorNames == nil {
+	candidates := map[string]bool{
+		fieldName:                  true,
+		ToSnakeCase(fieldName):     true,
+		strings.ToLower(fieldName): true,
+	}
+	if len(ancestorNames) == 0 {
 		return candidates
 	}
 	nameConcat := fieldName
@@ -66,8 +73,8 @@ func getColumnNameCandidates(fieldName string, ancestorNames []string) map[strin
 		nameConcat = ancestorNames[i] + "_" + nameConcat
 		candidates[nameConcat] = true
 		candidates[strings.ToLower(nameConcat)] = true
+		candidates[ToSnakeCase(nameConcat)] = true
 	}
-	// log.Println(candidates)
 	return candidates
 }
 
@@ -79,7 +86,6 @@ func ToSnakeCase(s string) string {
 	s = strings.Trim(s, " ")
 	n := ""
 	for i, v := range s {
-		// treat acronyms as words, eg for JSONData -> JSON is a whole word
 		nextCaseIsChanged := false
 		if i+1 < len(s) {
 			next := s[i+1]
@@ -93,7 +99,6 @@ func ToSnakeCase(s string) string {
 		}
 
 		if i > 0 && n[len(n)-1] != uint8(delimiter[0]) && nextCaseIsChanged {
-			// add underscore if next letter case type is changed
 			if v >= 'A' && v <= 'Z' {
 				n += string(delimiter) + string(v)
 			} else if v >= 'a' && v <= 'z' {

@@ -33,11 +33,13 @@ type element struct {
 }
 
 type resolver struct {
-	elements map[uniqueValId]*element
+	elements     map[uniqueValId]*element
+	elementOrder []uniqueValId // all elements stored in an order, important for the " order by " clause, earlier rows that map onto elements will be earlies in this slice
 }
 
 func newResolver() *resolver {
 	return &resolver{
-		elements: map[uniqueValId]*element{},
+		elementOrder: []uniqueValId{},
+		elements:     map[uniqueValId]*element{},
 	}
 }
