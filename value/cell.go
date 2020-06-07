@@ -11,6 +11,7 @@ import (
 	"time"
 	"unsafe"
 
+	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/timestamp"
 )
 
@@ -25,7 +26,8 @@ type Cell struct {
 	kind   reflect.Kind // data type with which Cell will be instantiated
 	bits   uint64       //IEEE 754 binary representation of numeric value
 	binary string       // non-numeric data as bytes
-	isNull bool
+	time   time.Time
+	valid  bool
 }
 
 var NullSet = errors.New("Null value cannot be loaded, use sql.NullX type")
@@ -44,19 +46,33 @@ func NewCell(v interface{}, typ *sql.ColumnType) (Cell, error) {
 			isSet = true
 			c = NewString(data)
 		}
-	case "DECIMAL":
-		c = NewFloat64(v.(float64))
+	case "DECIMAL", "FLOAT8", "FLOAT4":
+		if data, ok := v.(float64); ok {
+			isSet = true
+			c = NewFloat64(data)
+		}
 	case "BOOL":
-		c = NewBool(v.(bool))
+		if data, ok := v.(bool); ok {
+			isSet = true
+			c = NewBool(data)
+		}
 	case "INT":
-		c = NewInt(v.(int))
-	case "INT4":
+		if data, ok := v.(int); ok {
+			isSet = true
+			c = NewInt(data)
+		}
+	case "INT4", "INT8":
 		if data, ok := v.(int64); ok {
 			isSet = true
 			c = NewInt64(data)
 		}
 	case "BIGINT":
 		c = NewInt(v.(int))
+	case "TIME":
+		if data, ok := v.(time.Time); ok {
+			isSet = true
+			c = NewTime(data)
+		}
 	}
 	if !isSet {
 		return Cell{}, errors.New(fmt.Sprintf("carta: unknown data type %s for column %s ", typ.DatabaseTypeName(), typ.Name()))
@@ -68,55 +84,63 @@ func NewCell(v interface{}, typ *sql.ColumnType) (Cell, error) {
 func NewBool(c bool) Cell {
 	if c {
 		return Cell{
-			kind: reflect.Bool,
-			bits: 1,
+			kind:  reflect.Bool,
+			bits:  1,
+			valid: true,
 		}
 	}
 	return Cell{
-		kind: reflect.Bool,
-		bits: 0,
+		kind:  reflect.Bool,
+		bits:  0,
+		valid: true,
 	}
 }
 
 func NewFloat32(c float32) Cell {
 	return Cell{
-		kind: reflect.Float32,
-		bits: uint64(math.Float32bits(c)),
+		kind:  reflect.Float32,
+		bits:  uint64(math.Float32bits(c)),
+		valid: true,
 	}
 }
 
 func NewFloat64(c float64) Cell {
 	return Cell{
-		kind: reflect.Float64,
-		bits: math.Float64bits(c),
+		kind:  reflect.Float64,
+		bits:  math.Float64bits(c),
+		valid: true,
 	}
 }
 
 func NewInt32(c int32) Cell {
 	return Cell{
-		kind: reflect.Int32,
-		bits: uint64(c),
+		kind:  reflect.Int32,
+		bits:  uint64(c),
+		valid: true,
 	}
 }
 
 func NewUint32(c uint32) Cell {
 	return Cell{
-		kind: reflect.Uint32,
-		bits: uint64(c),
+		kind:  reflect.Uint32,
+		bits:  uint64(c),
+		valid: true,
 	}
 }
 
 func NewInt64(c int64) Cell {
 	return Cell{
-		kind: reflect.Int64,
-		bits: uint64(c),
+		kind:  reflect.Int64,
+		bits:  uint64(c),
+		valid: true,
 	}
 }
 
 func NewUint64(c uint64) Cell {
 	return Cell{
-		kind: reflect.Uint64,
-		bits: c,
+		kind:  reflect.Uint64,
+		bits:  c,
+		valid: true,
 	}
 }
 
@@ -124,6 +148,7 @@ func NewString(c string) Cell {
 	return Cell{
 		kind:   reflect.String,
 		binary: c,
+		valid:  true,
 	}
 }
 
@@ -142,19 +167,27 @@ func NewUint(c uint) Cell {
 }
 
 func NewTime(c time.Time) Cell {
-	return Cell{}
-}
-
-func NewTimestamp(c timestamp.Timestamp) Cell {
-	return Cell{}
+	return Cell{
+		kind:  reflect.Struct,
+		time:  c,
+		valid: true,
+	}
 }
 
 func NewNull() Cell {
-	return Cell{isNull: true}
+	return Cell{}
 }
 
 func (c Cell) Kind() reflect.Kind {
 	return c.kind
+}
+
+func (c Cell) IsNull() bool {
+	return !c.valid
+}
+
+func (c Cell) IsValid() bool {
+	return c.valid
 }
 
 func (c Cell) Bool() bool {
@@ -190,11 +223,75 @@ func (c Cell) String() string {
 }
 
 func (c Cell) Time() time.Time {
-	return time.Time{}
+	return c.time
 }
 
 func (c Cell) Timestamp() timestamp.Timestamp {
+	if t, err := ptypes.TimestampProto(c.Time()); err == nil {
+		return *t
+	}
+	// should not happen
 	return timestamp.Timestamp{}
+}
+
+func (c Cell) NullBool() sql.NullBool {
+	if !c.valid {
+		return sql.NullBool{}
+	}
+	return sql.NullBool{
+		Bool:  c.Bool(),
+		Valid: true,
+	}
+}
+
+func (c Cell) NullFloat64() sql.NullFloat64 {
+	if !c.valid {
+		return sql.NullFloat64{}
+	}
+	return sql.NullFloat64{
+		Float64: c.Float64(),
+		Valid:   true,
+	}
+}
+
+func (c Cell) NullInt32() sql.NullInt32 {
+	if !c.valid {
+		return sql.NullInt32{}
+	}
+	return sql.NullInt32{
+		Int32: c.Int32(),
+		Valid: true,
+	}
+}
+
+func (c Cell) NullInt64() sql.NullInt64 {
+	if !c.valid {
+		return sql.NullInt64{}
+	}
+	return sql.NullInt64{
+		Int64: c.Int64(),
+		Valid: true,
+	}
+}
+
+func (c Cell) NullString() sql.NullString {
+	if !c.valid {
+		return sql.NullString{}
+	}
+	return sql.NullString{
+		String: c.String(),
+		Valid:  true,
+	}
+}
+
+func (c Cell) NullTime() sql.NullTime {
+	if !c.valid {
+		return sql.NullTime{}
+	}
+	return sql.NullTime{
+		Time:  c.Time(),
+		Valid: true,
+	}
 }
 
 func (c Cell) AsInterface() interface{} {
@@ -239,160 +336,3 @@ func (c Cell) BitsAsString() string {
 		return ""
 	}
 }
-
-func (c Cell) SetInt(v reflect.Value) error {
-	if c.isNull {
-		return NullSet
-	}
-	if v.OverflowInt(c.Int64()) {
-		return OverflowErr(c.Int64(), v.Type())
-	}
-	v.SetInt(c.Int64())
-	return nil
-}
-
-func (c Cell) SetUint(v reflect.Value) error {
-	if c.isNull {
-		return NullSet
-	}
-	if v.OverflowUint(c.Uint64()) {
-		return OverflowErr(c.Uint64(), v.Type())
-	}
-	v.SetUint(c.Uint64())
-	return nil
-}
-
-func (c Cell) SetFloat(v reflect.Value) error {
-	if c.isNull {
-		return NullSet
-	}
-	if v.OverflowFloat(c.Float64()) {
-		return OverflowErr(c.Float64(), v.Type())
-	}
-	v.SetFloat(c.Float64())
-	return nil
-}
-
-func (c Cell) SetBool(v reflect.Value) error {
-	if c.isNull {
-		return NullSet
-	}
-	v.SetBool(c.Bool())
-	return nil
-}
-
-func (c Cell) SetString(v reflect.Value) error {
-	if c.isNull {
-		return NullSet
-	}
-	v.SetString(c.String())
-	return nil
-}
-
-func (c Cell) SetTime(v reflect.Value) error {
-	return nil
-}
-
-func (c Cell) SetTimestamp(v reflect.Value) error {
-	return nil
-}
-func (c Cell) SetNullBool(v reflect.Value) error {
-	return nil
-}
-func (c Cell) SetNullFloat64(v reflect.Value) error {
-	return nil
-}
-func (c Cell) SetNullInt32(v reflect.Value) error {
-	return nil
-}
-func (c Cell) SetNullInt64(v reflect.Value) error {
-	return nil
-}
-func (c Cell) SetNullString(v reflect.Value) error {
-	return nil
-}
-func (c Cell) SetNullTime(v reflect.Value) error {
-	return nil
-}
-
-// func determineConvertFunc(m *Mapper) error {
-// var conv convertFunc
-// for _, c := range m.PresentColumns {
-// sourceKind := getColumnGoType(c.typ)
-// conv = func(v interface{}) (interface{}, error) {
-// var c Cell
-// switch sourceKind {
-// case reflect.Bool:
-// c = NewBool(v.(bool))
-// case reflect.Float32:
-// c = NewFloat32(v.(float32))
-// case reflect.Float64:
-// c = NewFloat64(v.(float64))
-// case reflect.Int32:
-// c = NewInt32(v.(int32))
-// case reflect.Uint32:
-// c = NewUint32(v.(uint32))
-// case reflect.Int64:
-// c = NewInt64(v.(int64))
-// case reflect.Uint64:
-// c = NewUint64(v.(uint64))
-// case reflect.String:
-// c = NewString(v.(string))
-// case reflect.Int:
-// c = NewInt(v.(int))
-// case reflect.Uint:
-// c = NewUint(v.(uint))
-// }
-// if dstKind != reflect.Struct {
-// switch dstKind {
-// case reflect.Bool:
-// return c.Bool(), nil
-// case reflect.Float32:
-// return c.Float32(), nil
-// case reflect.Float64:
-// return c.Float64(), nil
-// case reflect.Int32:
-// return c.Int32(), nil
-// case reflect.Uint32:
-// return c.Uint32(), nil
-// case reflect.Int64:
-// return c.Int64(), nil
-// case reflect.Uint64:
-// return c.Uint64(), nil
-// case reflect.String:
-// return c.String(), nil
-// case reflect.Int:
-// return c.Int(), nil
-// case reflect.Uint:
-// return c.Uint(), nil
-// }
-// } else {
-// switch dstTyp {
-// case basicTypesByName["Time"]:
-// return c.Time()
-// case basicTypesByName["Timestamp"]:
-// return c.Timestamp()
-// case basicTypesByName["NullBool"]:
-// return c.NullBool()
-// case basicTypesByName["NullFloat64"]:
-// return c.NullFloat64()
-// case basicTypesByName["NullInt32"]:
-// return c.NullInt32()
-// case basicTypesByName["NullInt64"]:
-// return c.NullInt64()
-// case basicTypesByName["NullString"]:
-// return c.NullString()
-// case basicTypesByName["NullTime"]:
-// return c.NullTime()
-// }
-// }
-// return nil, fmt.Errorf("carta: error canverting from %T to %T", sourceTyp, dstTyp)
-// }
-// if m.IsBasic {
-// m.BasicConverter = conv
-// } else {
-// m.Converters = append(m.Converters, conv)
-// }
-// }
-// return nil
-// }

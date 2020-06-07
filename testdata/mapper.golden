@@ -727,5 +727,73 @@
                 }
             ]
         }
+    ],
+    "TestNotNull": [
+        {
+            "bool": true,
+            "bool2": {
+                "Bool": true,
+                "Valid": true
+            },
+            "time": "0000-01-02T00:00:00Z",
+            "time2": {
+                "Time": "0000-01-02T00:00:00Z",
+                "Valid": true
+            },
+            "timestamp": {},
+            "string": "1",
+            "string2": {
+                "String": "1",
+                "Valid": true
+            },
+            "float32": 1,
+            "float64": 1,
+            "float642": {
+                "Float64": 1,
+                "Valid": true
+            },
+            "int": 1,
+            "int32": 1,
+            "int322": {
+                "Int32": 1,
+                "Valid": true
+            },
+            "int64": 1,
+            "int642": {
+                "Int64": 1,
+                "Valid": true
+            },
+            "uint": 1,
+            "uint32": 1,
+            "uint64": 1
+        }
+    ],
+    "TestNull": [
+        {
+            "bool2": {
+                "Bool": false,
+                "Valid": false
+            },
+            "time2": {
+                "Time": "0001-01-01T00:00:00Z",
+                "Valid": false
+            },
+            "string2": {
+                "String": "",
+                "Valid": false
+            },
+            "float642": {
+                "Float64": 0,
+                "Valid": false
+            },
+            "int322": {
+                "Int32": 0,
+                "Valid": false
+            },
+            "int642": {
+                "Int64": 0,
+                "Valid": false
+            }
+        }
     ]
 }

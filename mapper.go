@@ -32,6 +32,12 @@ type Field struct {
 	Name string
 	Typ  reflect.Type
 	Kind reflect.Kind
+
+	//If the field is a pointer, fields below represent the underlying type,
+	// these fields are here to prevent reflect.PtrTo, or reflect.elem calls when setting primatives and basic types
+	IsPtr    bool
+	ElemTyp  reflect.Type // if Typ is *int, elemTyp is int
+	ElemKind reflect.Kind // if kind is ptr and typ is *int, elem kind is int
 }
 
 type Mapper struct {
@@ -243,11 +249,17 @@ func determineFieldsNames(m *Mapper) error {
 			} else {
 				name = field.Name
 			}
-			fields[fieldIndex(i)] = Field{
-				Name: name,
-				Typ:  field.Type,
-				Kind: field.Type.Kind(),
+			f := Field{
+				Name:  name,
+				Typ:   field.Type,
+				Kind:  field.Type.Kind(),
+				IsPtr: (field.Type.Kind() == reflect.Ptr),
 			}
+			if f.IsPtr {
+				f.ElemKind = field.Type.Elem().Kind()
+				f.ElemTyp = field.Type.Elem()
+			}
+			fields[fieldIndex(i)] = f
 		}
 	}
 	m.Fields = fields

@@ -32,45 +32,24 @@ const (
 	String
 )
 
-var BasicKinds = map[reflect.Kind]bool{
-	reflect.Float64: true,
-	reflect.Float32: true,
-	reflect.Int32:   true,
-	reflect.Uint32:  true,
-	reflect.Int64:   true,
-	reflect.Uint64:  true,
-	reflect.Bool:    true,
-	reflect.String:  true,
+var BasicKinds = map[reflect.Kind]Value{
+	reflect.Float64: Float64,
+	reflect.Float32: Float32,
+	reflect.Int32:   Int32,
+	reflect.Uint32:  Uint32,
+	reflect.Int64:   Int64,
+	reflect.Uint64:  Uint64,
+	reflect.Bool:    Bool,
+	reflect.String:  String,
 }
 
-var BasicTypes = map[reflect.Type]bool{
-	reflect.TypeOf(time.Time{}):           true,
-	reflect.TypeOf(timestamp.Timestamp{}): true,
-	reflect.TypeOf(sql.NullBool{}):        true,
-	reflect.TypeOf(sql.NullFloat64{}):     true,
-	reflect.TypeOf(sql.NullInt32{}):       true,
-	reflect.TypeOf(sql.NullInt64{}):       true,
-	reflect.TypeOf(sql.NullString{}):      true,
-	reflect.TypeOf(sql.NullTime{}):        true,
-}
-
-var BasicTypesByName = map[Value]reflect.Type{
-	Time:        reflect.TypeOf(time.Time{}),
-	Timestamp:   reflect.TypeOf(timestamp.Timestamp{}),
-	NullBool:    reflect.TypeOf(sql.NullBool{}),
-	NullFloat64: reflect.TypeOf(sql.NullFloat64{}),
-	NullInt32:   reflect.TypeOf(sql.NullInt32{}),
-	NullInt64:   reflect.TypeOf(sql.NullInt64{}),
-	NullString:  reflect.TypeOf(sql.NullString{}),
-	NullTime:    reflect.TypeOf(sql.NullTime{}),
-	Float64:     reflect.TypeOf(float64(1)),
-	Float32:     reflect.TypeOf(float32(1)),
-	Uint:        reflect.TypeOf(uint(1)),
-	Int:         reflect.TypeOf(int(1)),
-	Int32:       reflect.TypeOf(int32(1)),
-	Uint32:      reflect.TypeOf(uint32(1)),
-	Int64:       reflect.TypeOf(uint64(1)),
-	Uint64:      reflect.TypeOf(uint64(1)),
-	Bool:        reflect.TypeOf(bool(true)),
-	String:      reflect.TypeOf("string"),
+var BasicTypes = map[reflect.Type]Value{
+	reflect.TypeOf(time.Time{}):           Time,
+	reflect.TypeOf(timestamp.Timestamp{}): Timestamp,
+	reflect.TypeOf(sql.NullBool{}):        NullBool,
+	reflect.TypeOf(sql.NullFloat64{}):     NullFloat64,
+	reflect.TypeOf(sql.NullInt32{}):       NullInt32,
+	reflect.TypeOf(sql.NullInt64{}):       NullInt64,
+	reflect.TypeOf(sql.NullString{}):      NullString,
+	reflect.TypeOf(sql.NullTime{}):        NullTime,
 }

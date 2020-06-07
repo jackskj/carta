@@ -88,17 +88,56 @@ func loadRow(m *Mapper, row []interface{}, rsv *resolver) error {
 
 			//setting sql value onto the field
 			if !m.IsBasic {
-				switch m.Fields[field.i].Kind {
+				var (
+					kind reflect.Kind
+					dst  reflect.Value
+					typ  reflect.Type
+				)
+				if m.Fields[field.i].IsPtr && cell.IsValid() {
+					dst = reflect.New(m.Fields[field.i].ElemTyp).Elem()
+					kind = m.Fields[field.i].ElemKind
+					typ = m.Fields[field.i].ElemTyp
+				} else {
+					kind = m.Fields[field.i].Kind
+					typ = m.Fields[field.i].Typ
+					dst = dstField
+				}
+				switch kind {
 				case reflect.Bool:
-					dstField.SetBool(cell.Bool())
+					dst.SetBool(cell.Bool())
 				case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-					dstField.SetUint(cell.Uint64())
+					dst.SetUint(cell.Uint64())
 				case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-					dstField.SetInt(cell.Int64())
+					dst.SetInt(cell.Int64())
 				case reflect.String:
-					dstField.SetString(cell.String())
+					dst.SetString(cell.String())
 				case reflect.Float32, reflect.Float64:
-					dstField.SetFloat(cell.Float64())
+					dst.SetFloat(cell.Float64())
+				case reflect.Struct:
+					if strTyp, ok := value.BasicTypes[typ]; ok {
+						// TODO: Type asserion, prevent from calling ValueOf
+						switch strTyp {
+						case value.Time:
+							dst.Set(reflect.ValueOf(cell.Time()))
+						case value.Timestamp:
+							dst.Set(reflect.ValueOf(cell.Timestamp()))
+						case value.NullBool:
+							dst.Set(reflect.ValueOf(cell.NullBool()))
+						case value.NullFloat64:
+							dst.Set(reflect.ValueOf(cell.NullFloat64()))
+						case value.NullInt32:
+							dst.Set(reflect.ValueOf(cell.NullInt32()))
+						case value.NullInt64:
+							dst.Set(reflect.ValueOf(cell.NullInt64()))
+						case value.NullString:
+							dst.Set(reflect.ValueOf(cell.NullString()))
+						case value.NullTime:
+							dst.Set(reflect.ValueOf(cell.NullTime()))
+						}
+					}
+				}
+				if m.Fields[field.i].IsPtr && cell.IsValid() {
+					dstField.Set(dst.Addr())
 				}
 			}
 		}
