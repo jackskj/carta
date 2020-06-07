@@ -89,7 +89,7 @@ blogs:
 
 ## Comparison to Related Projects
 #### GORM
-Carta is NOT an Carta is not an object-relational mapper(ORM). Read more in [Approach](#Approach)
+Carta is NOT an an object-relational mapper(ORM). Read more in [Approach](#Approach)
 
 #### sqlx
 Sqlx does not track has-many relationships when marshaling SQL data onto a struct. This works fine when all your relationships are at most has-one (Blog has one Author) ie, each SQL row corresponds to one struct. Has-many relationships (Blog has man Posts), are not mapped correctly since a new instance of a struct is always instantiated even if data representing the same instance has already been mapped.
