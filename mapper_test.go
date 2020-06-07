@@ -181,17 +181,36 @@ func bufDialer(string, time.Duration) (net.Conn, error) {
 	return lis.Dial()
 }
 
-func TestBlog(m *testing.T) {
+func queryPG(rawSql string) (rows *sql.Rows) {
 	var (
-		rows *sql.Rows
-		err  error
+		err error
 	)
-	if rows, err = pgdb.Query(td.BlogQuery); err != nil {
-		log.Fatal(rows.Err())
+	if rows, err = pgdb.Query(rawSql); err != nil {
+		log.Fatal(err)
 	}
+	return
+}
+
+func TestBlog(m *testing.T) {
 	resp := []td.Blog{}
-	if err := carta.Map(rows, &resp); err != nil {
+	if err := carta.Map(queryPG(td.BlogQuery), &resp); err != nil {
 		log.Fatal(err.Error())
 	}
 	testResults["TestBlog"] = resp
+}
+
+func TestNull(m *testing.T) {
+	resp := []td.NullTest{}
+	if err := carta.Map(queryPG(td.NullQuery), &resp); err != nil {
+		log.Fatal(err.Error())
+	}
+	testResults["TestNull"] = resp
+}
+
+func TestNotNull(m *testing.T) {
+	resp := []td.NullTest{}
+	if err := carta.Map(queryPG(td.NotNullQuery), &resp); err != nil {
+		log.Fatal(err.Error())
+	}
+	testResults["TestNotNull"] = resp
 }

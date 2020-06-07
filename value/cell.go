@@ -28,7 +28,11 @@ type Cell struct {
 	isNull bool
 }
 
-var NullSet = errors.New("NULL value cannot be set")
+var NullSet = errors.New("Null value cannot be loaded, use sql.NullX type")
+
+func OverflowErr(i interface{}, typ reflect.Type) error {
+	return fmt.Errorf("carta: value %v overflows %v", i, typ)
+}
 
 func NewCell(v interface{}, typ *sql.ColumnType) (Cell, error) {
 	var c Cell

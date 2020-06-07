@@ -32,7 +32,6 @@ func (c *cache) loadMap(columns []string, dst reflect.Type) (mapper *Mapper, ok 
 	entry := mapperEntry{columns, dst}
 	vmap, ok := c.mapCache.Load(entry.raw())
 	if ok {
-		panic("a")
 		mapper = vmap.(*Mapper)
 	}
 	return

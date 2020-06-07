@@ -78,9 +78,6 @@ func getColumnNameCandidates(fieldName string, ancestorNames []string) map[strin
 	return candidates
 }
 
-func getColumnGoType(cTyp *sql.ColumnType) {
-}
-
 func ToSnakeCase(s string) string {
 	delimiter := "_"
 	s = strings.Trim(s, " ")
