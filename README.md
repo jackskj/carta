@@ -56,7 +56,7 @@ rows:
 blog_id | blog_title | posts_id | posts_name | author_id | author_username
 1       | Foo        | 1        | Bar        | 1         | John
 1       | Foo        | 2        | Baz        | 1         | John
-2       | Egg        | 1        | Beacon     | 2         | Ed
+2       | Egg        | 3        | Beacon     | 2         | Ed
 
 blogs:
 [{
@@ -70,7 +70,7 @@ blogs:
 			"post_id": 1,
 			"posts_name": "Bar"
 		}, {
-			"post_id": 1,
+			"post_id": 2,
 			"posts_name": "Baz"
 		}]
 }, {
@@ -81,8 +81,8 @@ blogs:
 		"author_username": "Ed"
 	},
 	"posts": [{
-			"post_id": 1,
-			"posts_name": "Bar"
+			"post_id": 3,
+			"posts_name": "Beacon"
 		}]
 }]
 ```
