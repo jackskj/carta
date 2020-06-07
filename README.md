@@ -69,12 +69,10 @@ blogs:
 	"posts": [{
 			"post_id": 1,
 			"posts_name": "Bar"
-		},
-		{
+		}, {
 			"post_id": 1,
 			"posts_name": "Baz"
-		}
-	]
+		}]
 }, {
 	"blog_id": 2,
 	"blog_title": "Egg",
@@ -85,8 +83,7 @@ blogs:
 	"posts": [{
 			"post_id": 1,
 			"posts_name": "Bar"
-		}
-	]
+		}]
 }]
 ```
 
