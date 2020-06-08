@@ -2,16 +2,11 @@ package carta
 
 import (
 	"database/sql"
-	"encoding/json"
 	"fmt"
-	"log"
 	"reflect"
 
 	"github.com/jackskj/carta/value"
 )
-
-var _ = log.Fatal
-var _ = json.Compact
 
 func (m *Mapper) loadRows(rows *sql.Rows, columnNum int) (*resolver, error) {
 	defer rows.Close() // may not need

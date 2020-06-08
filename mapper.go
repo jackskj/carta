@@ -2,7 +2,6 @@ package carta
 
 import (
 	"database/sql"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -10,8 +9,6 @@ import (
 
 	"github.com/jackskj/carta/value"
 )
-
-var _ = json.Marshal
 
 const (
 	CartaTagKey string = "db"

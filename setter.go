@@ -2,11 +2,8 @@ package carta
 
 import (
 	"errors"
-	"log"
 	"reflect"
 )
-
-var _ = log.Panic
 
 func setDst(m *Mapper, dst reflect.Value, rsv *resolver) error {
 	// dst is  always a pointer

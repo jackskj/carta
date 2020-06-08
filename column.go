@@ -2,12 +2,9 @@ package carta
 
 import (
 	"database/sql"
-	"log"
 	"sort"
 	"strings"
 )
-
-var _ = log.Fatal
 
 // column represents the ith struct field of this mapper where the column is to be mapped
 type column struct {

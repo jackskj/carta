@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"log"
 	"math"
 	"reflect"
 	"strconv"
@@ -16,11 +15,7 @@ import (
 )
 
 // TODO:  timestamp/time/ from string
-// NillXXX  from bits or binary
-
-// TODOLater:  int/float/uint/bool from string
-
-var _ = log.Fatal
+// TODO:  int/float/uint/bool from string
 
 // var Types = map[string]reflect.Type{}
 
