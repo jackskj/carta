@@ -214,3 +214,11 @@ func TestNotNull(m *testing.T) {
 	}
 	testResults["TestNotNull"] = resp
 }
+
+func TestPGTypes(m *testing.T) {
+	resp := []td.PGDTypes{}
+	if err := carta.Map(queryPG(td.PGDTypesQuery), &resp); err != nil {
+		log.Fatal(err.Error())
+	}
+	testResults["TestPGTypes"] = resp
+}

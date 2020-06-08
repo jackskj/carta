@@ -22,11 +22,13 @@ import (
 
 var _ = log.Fatal
 
+// var Types = map[string]reflect.Type{}
+
 type Cell struct {
 	kind   reflect.Kind // data type with which Cell will be instantiated
 	bits   uint64       //IEEE 754 binary representation of numeric value
-	binary string       // non-numeric data as bytes
-	time   time.Time
+	binary string       // non-numeric data as bytes for data which arrives as string
+	time   time.Time    //  any data that arrives as time, that includes timestame w/ or w/o zone
 	valid  bool
 }
 
@@ -39,46 +41,46 @@ func OverflowErr(i interface{}, typ reflect.Type) error {
 func NewCell(v interface{}, typ *sql.ColumnType) (Cell, error) {
 	var c Cell
 	isSet := false
-
-	switch typ.DatabaseTypeName() {
-	case "VARCHAR", "TEXT", "NVARCHAR":
+	// Types[typ.DatabaseTypeName()] = reflect.TypeOf(v)
+	switch SQLTypes[typ.DatabaseTypeName()] {
+	case String:
 		if data, ok := v.(string); ok {
 			isSet = true
 			c = NewString(data)
 		}
-	case "DECIMAL", "FLOAT8", "FLOAT4":
+	case Float64:
 		if data, ok := v.(float64); ok {
 			isSet = true
 			c = NewFloat64(data)
 		}
-	case "BOOL":
+	case Bool:
 		if data, ok := v.(bool); ok {
 			isSet = true
 			c = NewBool(data)
 		}
-	case "INT":
-		if data, ok := v.(int); ok {
-			isSet = true
-			c = NewInt(data)
-		}
-	case "INT4", "INT8":
+	case Int64:
 		if data, ok := v.(int64); ok {
 			isSet = true
 			c = NewInt64(data)
 		}
-	case "BIGINT":
-		c = NewInt(v.(int))
-	case "TIME":
+	case Time:
 		if data, ok := v.(time.Time); ok {
 			isSet = true
 			c = NewTime(data)
 		}
+	case Uint8Slice:
+		if data, ok := v.([]uint8); ok {
+			isSet = true
+			c = NewString(string(data))
+		}
 	}
 	if !isSet {
+		// for x, y := range Types {
+		// log.Printf("%v: %v", x, y)
+		// }
 		return Cell{}, errors.New(fmt.Sprintf("carta: unknown data type %s for column %s ", typ.DatabaseTypeName(), typ.Name()))
 	}
 	return c, nil
-
 }
 
 func NewBool(c bool) Cell {

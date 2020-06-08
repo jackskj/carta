@@ -16,6 +16,9 @@
                     "post_id": 6,
                     "post_blog_id": 2,
                     "post_author_id": 2,
+                    "post_created_on": {
+                        "seconds": 1257811200
+                    },
                     "post_section": "painting",
                     "post_subject": "0foJgo85SO",
                     "draft": "yfmQRChnyY",
@@ -76,6 +79,9 @@
                     "post_id": 8,
                     "post_blog_id": 2,
                     "post_author_id": 2,
+                    "post_created_on": {
+                        "seconds": 1257811200
+                    },
                     "post_section": "woodworking",
                     "post_subject": "9h6RCoNcOY",
                     "draft": "oNU8FRDClA",
@@ -136,6 +142,9 @@
                     "post_id": 25,
                     "post_blog_id": 2,
                     "post_author_id": 2,
+                    "post_created_on": {
+                        "seconds": 1257811200
+                    },
                     "post_section": "woodworking",
                     "post_subject": "8xf3HZNWnW",
                     "draft": "1Af4rjzAyB",
@@ -185,6 +194,9 @@
                     "post_id": 7,
                     "post_blog_id": 2,
                     "post_author_id": 2,
+                    "post_created_on": {
+                        "seconds": 1257811200
+                    },
                     "post_section": "snowboarding",
                     "post_subject": "jw5PTzmcl4",
                     "draft": "mbM2jL9l1m",
@@ -235,6 +247,9 @@
                     "post_id": 15,
                     "post_blog_id": 2,
                     "post_author_id": 2,
+                    "post_created_on": {
+                        "seconds": 1257811200
+                    },
                     "post_section": "woodworking",
                     "post_subject": "fA3qYprioa",
                     "draft": "VHOOn8HG6n",
@@ -288,6 +303,9 @@
                     "post_id": 34,
                     "post_blog_id": 1,
                     "post_author_id": 4,
+                    "post_created_on": {
+                        "seconds": 1257811200
+                    },
                     "post_section": "woodworking",
                     "post_subject": "IaXEZyJ9Hb",
                     "draft": "6Y8eu54YDr",
@@ -348,6 +366,9 @@
                     "post_id": 19,
                     "post_blog_id": 1,
                     "post_author_id": 4,
+                    "post_created_on": {
+                        "seconds": 1257811200
+                    },
                     "post_section": "painting",
                     "post_subject": "0LFFfcqNvG",
                     "draft": "RvmSDvrMdS",
@@ -392,6 +413,9 @@
                     "post_id": 5,
                     "post_blog_id": 1,
                     "post_author_id": 4,
+                    "post_created_on": {
+                        "seconds": 1257811200
+                    },
                     "post_section": "cooking",
                     "post_subject": "tOcco2IIaS",
                     "draft": "ZVYYbxMJM6",
@@ -457,6 +481,9 @@
                     "post_id": 38,
                     "post_blog_id": 1,
                     "post_author_id": 4,
+                    "post_created_on": {
+                        "seconds": 1257811200
+                    },
                     "post_section": "woodworking",
                     "post_subject": "GuidBS4Ya7",
                     "draft": "08XNtldEp3",
@@ -507,6 +534,9 @@
                     "post_id": 22,
                     "post_blog_id": 1,
                     "post_author_id": 4,
+                    "post_created_on": {
+                        "seconds": 1257811200
+                    },
                     "post_section": "cooking",
                     "post_subject": "VwYAScjtQb",
                     "draft": "Ks5ss7WOCv",
@@ -555,6 +585,9 @@
                     "post_id": 3,
                     "post_blog_id": 3,
                     "post_author_id": 6,
+                    "post_created_on": {
+                        "seconds": 1257811200
+                    },
                     "post_section": "snowboarding",
                     "post_subject": "luTrdPGr0I",
                     "draft": "LCxY3PuTTP",
@@ -604,6 +637,9 @@
                     "post_id": 36,
                     "post_blog_id": 3,
                     "post_author_id": 6,
+                    "post_created_on": {
+                        "seconds": 1257811200
+                    },
                     "post_section": "woodworking",
                     "post_subject": "Zjb0uDSal9",
                     "draft": "u7OkPmE7Kd",
@@ -664,6 +700,9 @@
                     "post_id": 30,
                     "post_blog_id": 3,
                     "post_author_id": 6,
+                    "post_created_on": {
+                        "seconds": 1257811200
+                    },
                     "post_section": "cooking",
                     "post_subject": "D8aK5963nw",
                     "draft": "Nn7L1XilVD",
@@ -703,6 +742,9 @@
                     "post_id": 28,
                     "post_blog_id": 3,
                     "post_author_id": 6,
+                    "post_created_on": {
+                        "seconds": 1257811200
+                    },
                     "post_section": "snowboarding",
                     "post_subject": "uGNUcNPovq",
                     "draft": "xhUEe5qh4H",
@@ -794,6 +836,28 @@
                 "Int64": 0,
                 "Valid": false
             }
+        }
+    ],
+    "TestPGTypes": [
+        {
+            "bigint": 1,
+            "bit": "1",
+            "boolean": true,
+            "character": "a",
+            "character_varying": "a",
+            "cidr": "1.1.1.1/32",
+            "date": "2004-10-19T00:00:00Z",
+            "double_precision": 1,
+            "integer": 1,
+            "real": 1,
+            "smallint": 1,
+            "text": "a",
+            "timestamp_without_time_zone": "2004-10-19T10:23:54Z",
+            "timestamp_with_time_zone": "2004-10-19T10:23:54Z",
+            "time_without_time_zone": "0000-01-01T04:05:06Z",
+            "time_with_time_zone": "0000-01-01T04:05:06-08:00",
+            "uuid": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+            "xml": "a"
         }
     ]
 }

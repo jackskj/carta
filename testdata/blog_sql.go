@@ -58,7 +58,7 @@ select
         P.id                as  post_id,
         P.blog_id           as  post_blog_id,
         P.author_id         as  post_author_id,
-        ---P.created_on        as  post_created_on,
+        P.created_on        as  post_created_on,
         P.section           as  post_section,
         P.subject           as  post_subject,
         P.draft             as  draft,
