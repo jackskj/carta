@@ -19,7 +19,7 @@ blogs := []Blog
 carta.Map(rows, &blogs)
 ```
 
-Assume that in above exmpele, we are using a schema containing has-one and has-many relationships:
+Assume that in above exmple, we are using a schema containing has-one and has-many relationships:
 
 ![schema](https://i.ibb.co/SPH3zhQ/Schema.png)
 
@@ -97,7 +97,7 @@ blogs:
 Carta is NOT an an object-relational mapper(ORM). Read more in [Approach](#Approach)
 
 #### sqlx
-Sqlx does not track has-many relationships when mapping SQL data. This works fine when all your relationships are at most has-one (Blog has one Author) ie, each SQL row corresponds to one struct. However, handling has-many relationships (Blog has many Posts), requires manual post-processing of the result or running many queries. 
+Sqlx does not track has-many relationships when mapping SQL data. This works fine when all your relationships are at most has-one (Blog has one Author) ie, each SQL row corresponds to one struct. However, handling has-many relationships (Blog has many Posts), requires  running many queries or running manual post-processing of the result. Carta handles these complexities automatically.
   
 ## Installation 
 ```
