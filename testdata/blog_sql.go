@@ -1,6 +1,8 @@
 package testdata
 
 import (
+	"database/sql"
+
 	"github.com/golang/protobuf/ptypes/timestamp"
 )
 
@@ -34,10 +36,9 @@ type Post struct {
 }
 
 type Comment struct {
-	CommentId     int    `db:"comment_id" json:"comment_id,omitempty"`
-	CommentPostId int    `db:"comment_post_id" json:"comment_post_id,omitempty"`
-	CommentName   string `db:"comment_name" json:"comment_name,omitempty"`
-	CommentText   string `db:"comment_text" json:"comment_text,omitempty"`
+	CommentId     *int           `db:"comment_id" json:"comment_id,omitempty"`
+	CommentPostId *int           `db:"comment_post_id" json:"comment_post_id,omitempty"`
+	CommentText   sql.NullString `db:"comment_text" json:"comment_text,omitempty"`
 }
 
 type Tag struct {
@@ -75,4 +76,6 @@ from blog B
         left outer join post_tag PT on  PT.post_id = P.id
         left outer join tag T       on  PT.tag_id = T.id
         where B.id in (1,2,3) 
+order by 
+        B.id, A.id, P.id, P.Id, C.id, T.id
 `

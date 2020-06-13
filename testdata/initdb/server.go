@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"database/sql"
+	"log"
 	"text/template"
 
 	"github.com/Masterminds/sprig"
@@ -88,6 +89,7 @@ func (m *InitServiceMapServer) InsertPostTag(ctx context.Context, r *InsertPostT
 	}
 	rawSql := sqlBuffer.String()
 	if _, err := m.DBs[r.GetMeta().Db].Exec(rawSql); err != nil {
+		log.Fatal(err.Error())
 		return nil, status.Error(codes.InvalidArgument, "error: executing query")
 	}
 	return &EmptyResponse{}, nil

@@ -14,6 +14,7 @@ require (
 	github.com/jackskj/protoc-gen-map v0.4.1
 	github.com/lib/pq v1.6.0
 	github.com/mitchellh/copystructure v1.0.0 // indirect
+	github.com/nsf/jsondiff v0.0.0-20200515183724-f29ed568f4ce
 	github.com/sergi/go-diff v1.1.0 // indirect
 	github.com/yudai/gojsondiff v1.0.0
 	github.com/yudai/golcs v0.0.0-20170316035057-ecda9a501e82 // indirect

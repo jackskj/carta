@@ -2,20 +2,25 @@ package carta
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"reflect"
 
 	"github.com/jackskj/carta/value"
 )
 
-func (m *Mapper) loadRows(rows *sql.Rows, columnNum int) (*resolver, error) {
+func (m *Mapper) loadRows(rows *sql.Rows, colTyps []*sql.ColumnType) (*resolver, error) {
 	defer rows.Close() // may not need
 	var err error
-	row := make([]interface{}, columnNum)
+	row := make([]interface{}, len(colTyps))
+	colTypNames := make([]string, len(colTyps))
+	for i := 0; i < len(colTyps); i++ {
+		colTypNames[i] = colTyps[i].DatabaseTypeName()
+	}
 	rsv := newResolver()
 	for rows.Next() {
-		for i, _ := range row {
-			row[i] = new(interface{})
+		for i := 0; i < len(colTyps); i++ {
+			row[i] = value.NewCell(colTypNames[i])
 		}
 		if err = rows.Scan(row...); err != nil {
 			return nil, err
@@ -24,12 +29,6 @@ func (m *Mapper) loadRows(rows *sql.Rows, columnNum int) (*resolver, error) {
 			return nil, err
 		}
 	}
-
-	// e, err := json.Marshal(rsv.uniqueVals)
-	// if err != nil {
-	// log.Fatalf("as" + err.Error())
-	// }
-	// log.Println("a" + string(e))
 	return rsv, nil
 }
 
@@ -49,11 +48,12 @@ func (m *Mapper) loadRows(rows *sql.Rows, columnNum int) (*resolver, error) {
 // nothins is done when the object has been already mapped in previous rows, however,
 // the function contunous to recursivelly map rows for all sub mappings inside Blog
 //  for example, if a blog has many Authors
+// rows are actually []*Cell, theu are passed here as interface since sql scan requires []interface{}
 func loadRow(m *Mapper, row []interface{}, rsv *resolver) error {
 	var (
 		err      error
 		dstField reflect.Value // destination field to be set with
-		cell     value.Cell
+		cell     *value.Cell
 		elem     *element
 		found    bool
 	)
@@ -64,74 +64,132 @@ func loadRow(m *Mapper, row []interface{}, rsv *resolver) error {
 		// unique row mapping found, new object
 		loadElem := reflect.New(m.Typ).Elem()
 
-		for _, field := range m.PresentColumns {
+		for _, col := range m.PresentColumns {
+			var (
+				kind     reflect.Kind  // kind of destination
+				dst      reflect.Value // destination to set
+				typ      reflect.Type  // underlying type of the destination
+				isDstPtr bool          //is the destination a pointer
+			)
+
+			cell = row[col.columnIndex].(*value.Cell)
+
 			if m.IsBasic {
-				dstField = loadElem
+				dst = loadElem
+				kind = m.Kind
+				typ = m.Typ
+				isDstPtr = m.IsTypePtr
 			} else {
-				dstField = loadElem.Field(int(field.i))
-			}
-			// sql.Row.Scan() retuens pointers in each cell, I have to use pointer indirection here
-			srcI := *row[field.columnIndex].(*interface{})
-
-			if srcI == nil { // returned sql cell is nil
-				cell = value.NewNull()
-			} else {
-				if cell, err = value.NewCell(srcI, field.typ); err != nil {
-					return err
-				}
-			}
-
-			//setting sql value onto the field
-			if !m.IsBasic {
-				var (
-					kind reflect.Kind
-					dst  reflect.Value
-					typ  reflect.Type
-				)
-				if m.Fields[field.i].IsPtr && cell.IsValid() {
-					dst = reflect.New(m.Fields[field.i].ElemTyp).Elem()
-					kind = m.Fields[field.i].ElemKind
-					typ = m.Fields[field.i].ElemTyp
+				dstField = loadElem.Field(int(col.i))
+				if m.Fields[col.i].IsPtr {
+					dst = reflect.New(m.Fields[col.i].ElemTyp).Elem()
+					kind = m.Fields[col.i].ElemKind
+					typ = m.Fields[col.i].ElemTyp
+					isDstPtr = true
 				} else {
-					kind = m.Fields[field.i].Kind
-					typ = m.Fields[field.i].Typ
 					dst = dstField
+					kind = m.Fields[col.i].Kind
+					typ = m.Fields[col.i].Typ
+					isDstPtr = false
 				}
+			}
+			if cell.IsNull() {
+				_, nullable := value.NullableTypes[typ]
+				if !(isDstPtr || nullable) {
+					return errors.New(fmt.Sprintf("carta: cannot load null value to type %s for column %s", typ, col.name))
+				}
+				// no need to set destination if cell is null
+			} else {
 				switch kind {
 				case reflect.Bool:
-					dst.SetBool(cell.Bool())
+					if d, err := cell.Bool(); err != nil {
+						return value.ConvertsionError(err, typ)
+					} else {
+						dst.SetBool(d)
+					}
 				case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-					dst.SetUint(cell.Uint64())
+					if d, err := cell.Uint64(); err != nil {
+						return value.ConvertsionError(err, typ)
+					} else {
+						dst.SetUint(d)
+					}
 				case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-					dst.SetInt(cell.Int64())
+					if d, err := cell.Int64(); err != nil {
+						return value.ConvertsionError(err, typ)
+					} else {
+						dst.SetInt(d)
+					}
 				case reflect.String:
-					dst.SetString(cell.String())
+					if d, err := cell.String(); err != nil {
+						return value.ConvertsionError(err, typ)
+					} else {
+						dst.SetString(d)
+					}
 				case reflect.Float32, reflect.Float64:
-					dst.SetFloat(cell.Float64())
+					if d, err := cell.Float64(); err != nil {
+						return value.ConvertsionError(err, typ)
+					} else {
+						dst.SetFloat(d)
+					}
 				case reflect.Struct:
 					if strTyp, ok := value.BasicTypes[typ]; ok {
 						// TODO: Type asserion, prevent from calling ValueOf
+						// TODO: make these stupid error checks more concise
+						//  this swich statement should be optimized
+
 						switch strTyp {
 						case value.Time:
-							dst.Set(reflect.ValueOf(cell.Time()))
+							if d, err := cell.Time(); err != nil {
+								return value.ConvertsionError(err, typ)
+							} else {
+								dst.Set(reflect.ValueOf(d))
+							}
 						case value.Timestamp:
-							dst.Set(reflect.ValueOf(cell.Timestamp()))
+							if d, err := cell.Timestamp(); err != nil {
+								return value.ConvertsionError(err, typ)
+							} else {
+								dst.Set(reflect.ValueOf(d))
+							}
 						case value.NullBool:
-							dst.Set(reflect.ValueOf(cell.NullBool()))
+							if d, err := cell.NullBool(); err != nil {
+								return value.ConvertsionError(err, typ)
+							} else {
+								dst.Set(reflect.ValueOf(d))
+							}
 						case value.NullFloat64:
-							dst.Set(reflect.ValueOf(cell.NullFloat64()))
+							if d, err := cell.NullFloat64(); err != nil {
+								return value.ConvertsionError(err, typ)
+							} else {
+								dst.Set(reflect.ValueOf(d))
+							}
 						case value.NullInt32:
-							dst.Set(reflect.ValueOf(cell.NullInt32()))
+							if d, err := cell.NullInt32(); err != nil {
+								return value.ConvertsionError(err, typ)
+							} else {
+								dst.Set(reflect.ValueOf(d))
+							}
 						case value.NullInt64:
-							dst.Set(reflect.ValueOf(cell.NullInt64()))
+							if d, err := cell.NullInt64(); err != nil {
+								return value.ConvertsionError(err, typ)
+							} else {
+								dst.Set(reflect.ValueOf(d))
+							}
 						case value.NullString:
-							dst.Set(reflect.ValueOf(cell.NullString()))
+							if d, err := cell.NullString(); err != nil {
+								return value.ConvertsionError(err, typ)
+							} else {
+								dst.Set(reflect.ValueOf(d))
+							}
 						case value.NullTime:
-							dst.Set(reflect.ValueOf(cell.NullTime()))
+							if d, err := cell.NullTime(); err != nil {
+								return value.ConvertsionError(err, typ)
+							} else {
+								dst.Set(reflect.ValueOf(d))
+							}
 						}
 					}
 				}
-				if m.Fields[field.i].IsPtr && cell.IsValid() {
+				if !m.IsBasic && m.Fields[col.i].IsPtr {
 					dstField.Set(dst.Addr())
 				}
 			}
@@ -157,14 +215,11 @@ func loadRow(m *Mapper, row []interface{}, rsv *resolver) error {
 }
 
 // Generates unique id based on the ancestors of the struct as well as currently considered colum values
-func getUniqueId(row []interface{}, m *Mapper) (uid uniqueValId) {
-	uid = ""
+func getUniqueId(row []interface{}, m *Mapper) uniqueValId {
+	// TODO: set capacity of the uid slice, using bytes.buffer
+	uid := ""
 	for _, i := range m.SortedColumnIndexes {
-		// TODO: Implement a more advanced and better performing hashing
-		// this can be done by dumping row values into []byte by using
-		// sql.driver.valuer interface
-		r := row[i].(*interface{})
-		uid = uid + uniqueValId(fmt.Sprintf("%v|", *r))
+		uid = uid + row[i].(*value.Cell).Uid()
 	}
-	return
+	return uniqueValId(uid)
 }

@@ -55,8 +55,7 @@ func lorem() string {
 	return string(bytes)
 }
 
-func GenerateRequests(dbname string) *Requests {
-	meta := &initdb.Meta{Db: dbname}
+func GenerateRequests() *Requests {
 	blogAuthor = make(map[int]int)
 	for i, b := range blogs {
 		blogAuthor[i] = b
@@ -96,7 +95,6 @@ func GenerateRequests(dbname string) *Requests {
 		requests.InsertTagRequests = append(
 			requests.InsertTagRequests,
 			&initdb.InsertTagRequest{
-				Meta: meta,
 				Id:   uint32(i),
 				Name: lorem(),
 			},
@@ -106,7 +104,6 @@ func GenerateRequests(dbname string) *Requests {
 		requests.InsertAuthorRequests = append(
 			requests.InsertAuthorRequests,
 			&initdb.InsertAuthorRequest{
-				Meta:             meta,
 				Id:               uint32(i),
 				Username:         lorem(),
 				Password:         lorem(),
@@ -120,7 +117,6 @@ func GenerateRequests(dbname string) *Requests {
 		requests.InsertPostTagRequests = append(
 			requests.InsertPostTagRequests,
 			&initdb.InsertPostTagRequest{
-				Meta:   meta,
 				PostId: uint32(i[0]),
 				TagId:  uint32(i[1]),
 			},
@@ -130,7 +126,6 @@ func GenerateRequests(dbname string) *Requests {
 		requests.InsertCommentRequests = append(
 			requests.InsertCommentRequests,
 			&initdb.InsertCommentRequest{
-				Meta:    meta,
 				Id:      uint32(i),
 				PostId:  uint32(commentPost[i]),
 				Name:    lorem(),
@@ -143,7 +138,6 @@ func GenerateRequests(dbname string) *Requests {
 		requests.InsertPostRequests = append(
 			requests.InsertPostRequests,
 			&initdb.InsertPostRequest{
-				Meta:      meta,
 				Id:        uint32(i),
 				AuthorId:  uint32(postAuthor[i]),
 				BlogId:    uint32(postBlog[i]),
@@ -160,7 +154,6 @@ func GenerateRequests(dbname string) *Requests {
 		requests.InsertBlogRequests = append(
 			requests.InsertBlogRequests,
 			&initdb.InsertBlogRequest{
-				Meta:     meta,
 				Id:       uint32(i),
 				Title:    lorem(),
 				AuthorId: uint32(blogAuthor[i]),
@@ -192,7 +185,7 @@ func GetPG() *sql.DB {
 }
 
 func GetMySql() *sql.DB {
-	connStr := "root@/mysql"
+	connStr := "root@/mysql?multiStatements=true&parseTime=true"
 	db, err := sql.Open("mysql", connStr)
 	if err != nil || db.Ping() != nil {
 		log.Println("Cannot connect to testing database, \n" +

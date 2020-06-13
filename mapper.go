@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"log"
 	"reflect"
 
 	"github.com/jackskj/carta/value"
@@ -53,16 +52,16 @@ type Mapper struct {
 	// }
 	// basic can only be true if cardinality is collection
 	IsBasic bool
-	// BasicConverter convertFunc
 
 	Typ  reflect.Type // Underlying type to be mapped
 	Kind reflect.Kind // Underlying Kind to be mapped
 
 	IsTypePtr bool // is the underlying type pointed to
-	// Converters map[int]convertFunc // setters for each fields, int is the i'th struct field
 
-	// Columns of the SQL response which are present in this struct
-	PresentColumns      map[string]column
+	// present columns are columns that were found to map onto a particular fild of a struct.
+	// those fiels must either be basic (primative, time or sql.NullXX)
+	PresentColumns map[string]column
+	// Sorted columns are present columns in consistant order,
 	SortedColumnIndexes []int
 
 	// when reusing the same struct multiple times, you are able to specify the colimn prefix using parent structs
@@ -106,10 +105,8 @@ func Map(rows *sql.Rows, dst interface{}) error {
 	mapper, ok := mapperCache.loadMap(columns, dstTyp)
 	if !ok {
 		if !(isSlicePtr(dstTyp) || isStructPtr(dstTyp)) {
-			return fmt.Errorf("carta: cannot map rows onto %s, destination must be pointer to a slice(*[]) or pointer to struct", dstTyp)
+			return fmt.Errorf("carta: cannot map rows onto %s, destination must be pointer to a slice(*[]) or pointer to a struct", dstTyp)
 		}
-		// return errors.New("carta: destination pointer is nill, instantiate a new empty instance of destination before mapping")
-		// }
 
 		// generate new mapper
 		if mapper, err = newMapper(dstTyp); err != nil {
@@ -138,7 +135,7 @@ func Map(rows *sql.Rows, dst interface{}) error {
 
 	}
 
-	if rsv, err = mapper.loadRows(rows, len(columns)); err != nil {
+	if rsv, err = mapper.loadRows(rows, columnTypes); err != nil {
 		return err
 	}
 
@@ -170,7 +167,7 @@ func newMapper(t reflect.Type) (*Mapper, error) {
 	}
 
 	if crd == Collection {
-		isBasic = isBasicType(t)
+		isBasic = isBasicType(elemTyp)
 		if elemTyp.Kind() == reflect.Ptr {
 			elemTyp = elemTyp.Elem()
 			isTypePtr = true
@@ -195,6 +192,7 @@ func newMapper(t reflect.Type) (*Mapper, error) {
 		IsListPtr: isListPtr,
 		IsBasic:   isBasic,
 		Typ:       elemTyp,
+		Kind:      elemTyp.Kind(),
 		IsTypePtr: isTypePtr,
 	}
 	if subMaps, err = findSubMaps(mapper.Typ); err != nil {
@@ -233,9 +231,6 @@ func determineFieldsNames(m *Mapper) error {
 
 	if m.IsBasic {
 		return nil
-	}
-	if m.Typ.Kind() != reflect.Struct {
-		log.Fatal(m.Typ)
 	}
 
 	for i := 0; i < m.Typ.NumField(); i++ {
@@ -285,7 +280,7 @@ func isSubMap(t reflect.Type) bool {
 }
 
 // Basic types are any types that are intended to be set from sql row data
-// Primative fields, sql.NullXXX, time.Time, pg timestamp qualify as basic
+// Primative fields, sql.NullXXX, time.Time, proto timestamp qualify as basic
 func isBasicType(t reflect.Type) bool {
 	if t.Kind() == reflect.Ptr {
 		t = t.Elem()
@@ -299,10 +294,11 @@ func isBasicType(t reflect.Type) bool {
 	return false
 }
 
-// test wether incoming type is a pointer to a struct, courtesy of BQ api
+// test wether the type to be set is a pointer to a struct, courtesy of BQ api
 func isStructPtr(t reflect.Type) bool {
 	return t.Kind() == reflect.Ptr && t.Elem().Kind() == reflect.Struct
 }
+
 func isSlicePtr(t reflect.Type) bool {
 	return t.Kind() == reflect.Ptr && t.Elem().Kind() == reflect.Slice
 }

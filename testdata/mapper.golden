@@ -1,6 +1,367 @@
 {
     "TestBlog": [
         {
+            "blog_id": 1,
+            "blog_title": "oJj4PSn4Oe",
+            "author": {
+                "author_id": 4,
+                "author_username": "X7tLFJ84qY",
+                "author_password": "U6UrN8ctec",
+                "author_email": "wZt5S4zjhD",
+                "author_bio": "0tXRTmkYKQ",
+                "author_favourite_section": "woodworking"
+            },
+            "posts": [
+                {
+                    "post_id": 5,
+                    "post_blog_id": 1,
+                    "post_author_id": 4,
+                    "post_created_on": {
+                        "seconds": 1257811200
+                    },
+                    "post_section": "cooking",
+                    "post_subject": "tOcco2IIaS",
+                    "draft": "ZVYYbxMJM6",
+                    "post_body": "lW3NffpMlo",
+                    "comments": [
+                        {
+                            "comment_id": 4,
+                            "comment_post_id": 5,
+                            "comment_text": {
+                                "String": "pz8kb9iAGV",
+                                "Valid": true
+                            }
+                        },
+                        {
+                            "comment_id": 28,
+                            "comment_post_id": 5,
+                            "comment_text": {
+                                "String": "H3DQ6P1YVa",
+                                "Valid": true
+                            }
+                        },
+                        {
+                            "comment_id": 30,
+                            "comment_post_id": 5,
+                            "comment_text": {
+                                "String": "EE39h4J8wu",
+                                "Valid": true
+                            }
+                        },
+                        {
+                            "comment_id": 36,
+                            "comment_post_id": 5,
+                            "comment_text": {
+                                "String": "ZpdAaKIYj0",
+                                "Valid": true
+                            }
+                        },
+                        {
+                            "comment_id": 64,
+                            "comment_post_id": 5,
+                            "comment_text": {
+                                "String": "eh0VOrNomk",
+                                "Valid": true
+                            }
+                        },
+                        {
+                            "comment_id": 90,
+                            "comment_post_id": 5,
+                            "comment_text": {
+                                "String": "gLFNGASTmA",
+                                "Valid": true
+                            }
+                        },
+                        {
+                            "comment_id": 134,
+                            "comment_post_id": 5,
+                            "comment_text": {
+                                "String": "rdV888clme",
+                                "Valid": true
+                            }
+                        },
+                        {
+                            "comment_id": 141,
+                            "comment_post_id": 5,
+                            "comment_text": {
+                                "String": "LIYh7R1zV9",
+                                "Valid": true
+                            }
+                        }
+                    ],
+                    "tags": [
+                        {
+                            "tag_id": 1,
+                            "tag_name": "VuS9jZ8uVb"
+                        },
+                        {
+                            "tag_id": 8,
+                            "tag_name": "hV3vC5AWX3"
+                        },
+                        {
+                            "tag_id": 9,
+                            "tag_name": "9IVUWSP2Nc"
+                        }
+                    ]
+                },
+                {
+                    "post_id": 19,
+                    "post_blog_id": 1,
+                    "post_author_id": 4,
+                    "post_created_on": {
+                        "seconds": 1257811200
+                    },
+                    "post_section": "painting",
+                    "post_subject": "0LFFfcqNvG",
+                    "draft": "RvmSDvrMdS",
+                    "post_body": "kNPsgkvIId",
+                    "comments": [
+                        {
+                            "comment_id": 0,
+                            "comment_post_id": 19,
+                            "comment_text": {
+                                "String": "HGPGn50NkO",
+                                "Valid": true
+                            }
+                        },
+                        {
+                            "comment_id": 48,
+                            "comment_post_id": 19,
+                            "comment_text": {
+                                "String": "T6dDoHNSPE",
+                                "Valid": true
+                            }
+                        },
+                        {
+                            "comment_id": 106,
+                            "comment_post_id": 19,
+                            "comment_text": {
+                                "String": "gmKwUMoa5S",
+                                "Valid": true
+                            }
+                        },
+                        {
+                            "comment_id": 191,
+                            "comment_post_id": 19,
+                            "comment_text": {
+                                "String": "x4j9HlWQyk",
+                                "Valid": true
+                            }
+                        }
+                    ],
+                    "tags": [
+                        {
+                            "tag_id": 6,
+                            "tag_name": "BpLnfgDsc2"
+                        },
+                        {
+                            "tag_id": 7,
+                            "tag_name": "N95RxRTZHW"
+                        },
+                        {
+                            "tag_id": 8,
+                            "tag_name": "hV3vC5AWX3"
+                        }
+                    ]
+                },
+                {
+                    "post_id": 22,
+                    "post_blog_id": 1,
+                    "post_author_id": 4,
+                    "post_created_on": {
+                        "seconds": 1257811200
+                    },
+                    "post_section": "cooking",
+                    "post_subject": "VwYAScjtQb",
+                    "draft": "Ks5ss7WOCv",
+                    "post_body": "dQpuP45ZdI",
+                    "comments": [
+                        {
+                            "comment_id": 27,
+                            "comment_post_id": 22,
+                            "comment_text": {
+                                "String": "ZFqFTbV2W4",
+                                "Valid": true
+                            }
+                        },
+                        {
+                            "comment_id": 119,
+                            "comment_post_id": 22,
+                            "comment_text": {
+                                "String": "HRxVmRFa3s",
+                                "Valid": true
+                            }
+                        }
+                    ],
+                    "tags": [
+                        {
+                            "tag_name": "HciWvqZTa2"
+                        },
+                        {
+                            "tag_id": 6,
+                            "tag_name": "BpLnfgDsc2"
+                        },
+                        {
+                            "tag_id": 9,
+                            "tag_name": "9IVUWSP2Nc"
+                        }
+                    ]
+                },
+                {
+                    "post_id": 34,
+                    "post_blog_id": 1,
+                    "post_author_id": 4,
+                    "post_created_on": {
+                        "seconds": 1257811200
+                    },
+                    "post_section": "woodworking",
+                    "post_subject": "IaXEZyJ9Hb",
+                    "draft": "6Y8eu54YDr",
+                    "post_body": "5HLn3pWki1",
+                    "comments": [
+                        {
+                            "comment_id": 11,
+                            "comment_post_id": 34,
+                            "comment_text": {
+                                "String": "B27FtqAA9w",
+                                "Valid": true
+                            }
+                        },
+                        {
+                            "comment_id": 25,
+                            "comment_post_id": 34,
+                            "comment_text": {
+                                "String": "BhwjV7Gc9u",
+                                "Valid": true
+                            }
+                        },
+                        {
+                            "comment_id": 67,
+                            "comment_post_id": 34,
+                            "comment_text": {
+                                "String": "58ONeDbgGb",
+                                "Valid": true
+                            }
+                        },
+                        {
+                            "comment_id": 73,
+                            "comment_post_id": 34,
+                            "comment_text": {
+                                "String": "zjyfJXUUQD",
+                                "Valid": true
+                            }
+                        },
+                        {
+                            "comment_id": 81,
+                            "comment_post_id": 34,
+                            "comment_text": {
+                                "String": "SllRkTm2hH",
+                                "Valid": true
+                            }
+                        },
+                        {
+                            "comment_id": 88,
+                            "comment_post_id": 34,
+                            "comment_text": {
+                                "String": "oGMDCfLXVQ",
+                                "Valid": true
+                            }
+                        },
+                        {
+                            "comment_id": 179,
+                            "comment_post_id": 34,
+                            "comment_text": {
+                                "String": "z5iF8zq1lM",
+                                "Valid": true
+                            }
+                        }
+                    ],
+                    "tags": [
+                        {
+                            "tag_id": 3,
+                            "tag_name": "Dkh9h2fhfU"
+                        },
+                        {
+                            "tag_id": 5,
+                            "tag_name": "UsaD6HEdz0"
+                        },
+                        {
+                            "tag_id": 8,
+                            "tag_name": "hV3vC5AWX3"
+                        }
+                    ]
+                },
+                {
+                    "post_id": 38,
+                    "post_blog_id": 1,
+                    "post_author_id": 4,
+                    "post_created_on": {
+                        "seconds": 1257811200
+                    },
+                    "post_section": "woodworking",
+                    "post_subject": "GuidBS4Ya7",
+                    "draft": "08XNtldEp3",
+                    "post_body": "GJ2RU98Jas",
+                    "comments": [
+                        {
+                            "comment_id": 52,
+                            "comment_post_id": 38,
+                            "comment_text": {
+                                "String": "PU4kzjuFy8",
+                                "Valid": true
+                            }
+                        },
+                        {
+                            "comment_id": 76,
+                            "comment_post_id": 38,
+                            "comment_text": {
+                                "String": "cZfckdrUax",
+                                "Valid": true
+                            }
+                        },
+                        {
+                            "comment_id": 104,
+                            "comment_post_id": 38,
+                            "comment_text": {
+                                "String": "AqOtcOjeS1",
+                                "Valid": true
+                            }
+                        },
+                        {
+                            "comment_id": 163,
+                            "comment_post_id": 38,
+                            "comment_text": {
+                                "String": "Zf8TxfzIoz",
+                                "Valid": true
+                            }
+                        },
+                        {
+                            "comment_id": 165,
+                            "comment_post_id": 38,
+                            "comment_text": {
+                                "String": "7ErECITW8C",
+                                "Valid": true
+                            }
+                        }
+                    ],
+                    "tags": [
+                        {
+                            "tag_id": 1,
+                            "tag_name": "VuS9jZ8uVb"
+                        },
+                        {
+                            "tag_id": 5,
+                            "tag_name": "UsaD6HEdz0"
+                        },
+                        {
+                            "tag_id": 8,
+                            "tag_name": "hV3vC5AWX3"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
             "blog_id": 2,
             "blog_title": "s7fC7cqHmM",
             "author": {
@@ -25,39 +386,60 @@
                     "post_body": "36eMXXI3TE",
                     "comments": [
                         {
-                            "comment_id": 199,
-                            "comment_post_id": 6,
-                            "comment_text": "NElCnqsGwV"
-                        },
-                        {
                             "comment_id": 51,
                             "comment_post_id": 6,
-                            "comment_text": "2pGsPo1YJF"
+                            "comment_text": {
+                                "String": "2pGsPo1YJF",
+                                "Valid": true
+                            }
                         },
                         {
                             "comment_id": 63,
                             "comment_post_id": 6,
-                            "comment_text": "ChTHlOIgmu"
+                            "comment_text": {
+                                "String": "ChTHlOIgmu",
+                                "Valid": true
+                            }
                         },
                         {
                             "comment_id": 79,
                             "comment_post_id": 6,
-                            "comment_text": "OPeSo21N1Z"
-                        },
-                        {
-                            "comment_id": 152,
-                            "comment_post_id": 6,
-                            "comment_text": "ti7KayVLUJ"
-                        },
-                        {
-                            "comment_id": 127,
-                            "comment_post_id": 6,
-                            "comment_text": "gtpRYXuPoZ"
+                            "comment_text": {
+                                "String": "OPeSo21N1Z",
+                                "Valid": true
+                            }
                         },
                         {
                             "comment_id": 86,
                             "comment_post_id": 6,
-                            "comment_text": "IAOoNW7pzZ"
+                            "comment_text": {
+                                "String": "IAOoNW7pzZ",
+                                "Valid": true
+                            }
+                        },
+                        {
+                            "comment_id": 127,
+                            "comment_post_id": 6,
+                            "comment_text": {
+                                "String": "gtpRYXuPoZ",
+                                "Valid": true
+                            }
+                        },
+                        {
+                            "comment_id": 152,
+                            "comment_post_id": 6,
+                            "comment_text": {
+                                "String": "ti7KayVLUJ",
+                                "Valid": true
+                            }
+                        },
+                        {
+                            "comment_id": 199,
+                            "comment_post_id": 6,
+                            "comment_text": {
+                                "String": "NElCnqsGwV",
+                                "Valid": true
+                            }
                         }
                     ],
                     "tags": [
@@ -76,121 +458,6 @@
                     ]
                 },
                 {
-                    "post_id": 8,
-                    "post_blog_id": 2,
-                    "post_author_id": 2,
-                    "post_created_on": {
-                        "seconds": 1257811200
-                    },
-                    "post_section": "woodworking",
-                    "post_subject": "9h6RCoNcOY",
-                    "draft": "oNU8FRDClA",
-                    "post_body": "8IR9hFKz7k",
-                    "comments": [
-                        {
-                            "comment_id": 108,
-                            "comment_post_id": 8,
-                            "comment_text": "uaHYToYjSq"
-                        },
-                        {
-                            "comment_id": 37,
-                            "comment_post_id": 8,
-                            "comment_text": "Ou92jYHQZL"
-                        },
-                        {
-                            "comment_id": 59,
-                            "comment_post_id": 8,
-                            "comment_text": "fN864O3ok5"
-                        },
-                        {
-                            "comment_id": 109,
-                            "comment_post_id": 8,
-                            "comment_text": "qm2fPPYAtC"
-                        },
-                        {
-                            "comment_id": 84,
-                            "comment_post_id": 8,
-                            "comment_text": "NNbekUZiSX"
-                        },
-                        {
-                            "comment_id": 118,
-                            "comment_post_id": 8,
-                            "comment_text": "2Uzd3QDNZp"
-                        },
-                        {
-                            "comment_id": 6,
-                            "comment_post_id": 8,
-                            "comment_text": "cMH6mf0aDd"
-                        }
-                    ],
-                    "tags": [
-                        {
-                            "tag_id": 1,
-                            "tag_name": "VuS9jZ8uVb"
-                        },
-                        {
-                            "tag_id": 3,
-                            "tag_name": "Dkh9h2fhfU"
-                        },
-                        {
-                            "tag_id": 6,
-                            "tag_name": "BpLnfgDsc2"
-                        }
-                    ]
-                },
-                {
-                    "post_id": 25,
-                    "post_blog_id": 2,
-                    "post_author_id": 2,
-                    "post_created_on": {
-                        "seconds": 1257811200
-                    },
-                    "post_section": "woodworking",
-                    "post_subject": "8xf3HZNWnW",
-                    "draft": "1Af4rjzAyB",
-                    "post_body": "Zl96c8YxYT",
-                    "comments": [
-                        {
-                            "comment_id": 138,
-                            "comment_post_id": 25,
-                            "comment_text": "uV9fHjxGUz"
-                        },
-                        {
-                            "comment_id": 122,
-                            "comment_post_id": 25,
-                            "comment_text": "8d63ycPwFJ"
-                        },
-                        {
-                            "comment_id": 185,
-                            "comment_post_id": 25,
-                            "comment_text": "wcZZf2dUM9"
-                        },
-                        {
-                            "comment_id": 155,
-                            "comment_post_id": 25,
-                            "comment_text": "bO6oWHkNug"
-                        },
-                        {
-                            "comment_id": 65,
-                            "comment_post_id": 25,
-                            "comment_text": "eHA3ZCgvXK"
-                        }
-                    ],
-                    "tags": [
-                        {
-                            "tag_name": "HciWvqZTa2"
-                        },
-                        {
-                            "tag_id": 3,
-                            "tag_name": "Dkh9h2fhfU"
-                        },
-                        {
-                            "tag_id": 8,
-                            "tag_name": "hV3vC5AWX3"
-                        }
-                    ]
-                },
-                {
                     "post_id": 7,
                     "post_blog_id": 2,
                     "post_author_id": 2,
@@ -203,29 +470,44 @@
                     "post_body": "xRnPi6lgQR",
                     "comments": [
                         {
-                            "comment_id": 197,
-                            "comment_post_id": 7,
-                            "comment_text": "vqFbEZsXci"
-                        },
-                        {
                             "comment_id": 50,
                             "comment_post_id": 7,
-                            "comment_text": "cxYVH87sQw"
-                        },
-                        {
-                            "comment_id": 193,
-                            "comment_post_id": 7,
-                            "comment_text": "njpNGUDmRI"
+                            "comment_text": {
+                                "String": "cxYVH87sQw",
+                                "Valid": true
+                            }
                         },
                         {
                             "comment_id": 82,
                             "comment_post_id": 7,
-                            "comment_text": "MKPOUNwak3"
+                            "comment_text": {
+                                "String": "MKPOUNwak3",
+                                "Valid": true
+                            }
                         },
                         {
                             "comment_id": 132,
                             "comment_post_id": 7,
-                            "comment_text": "XUnTUXERVA"
+                            "comment_text": {
+                                "String": "XUnTUXERVA",
+                                "Valid": true
+                            }
+                        },
+                        {
+                            "comment_id": 193,
+                            "comment_post_id": 7,
+                            "comment_text": {
+                                "String": "njpNGUDmRI",
+                                "Valid": true
+                            }
+                        },
+                        {
+                            "comment_id": 197,
+                            "comment_post_id": 7,
+                            "comment_text": {
+                                "String": "vqFbEZsXci",
+                                "Valid": true
+                            }
                         }
                     ],
                     "tags": [
@@ -244,6 +526,90 @@
                     ]
                 },
                 {
+                    "post_id": 8,
+                    "post_blog_id": 2,
+                    "post_author_id": 2,
+                    "post_created_on": {
+                        "seconds": 1257811200
+                    },
+                    "post_section": "woodworking",
+                    "post_subject": "9h6RCoNcOY",
+                    "draft": "oNU8FRDClA",
+                    "post_body": "8IR9hFKz7k",
+                    "comments": [
+                        {
+                            "comment_id": 6,
+                            "comment_post_id": 8,
+                            "comment_text": {
+                                "String": "cMH6mf0aDd",
+                                "Valid": true
+                            }
+                        },
+                        {
+                            "comment_id": 37,
+                            "comment_post_id": 8,
+                            "comment_text": {
+                                "String": "Ou92jYHQZL",
+                                "Valid": true
+                            }
+                        },
+                        {
+                            "comment_id": 59,
+                            "comment_post_id": 8,
+                            "comment_text": {
+                                "String": "fN864O3ok5",
+                                "Valid": true
+                            }
+                        },
+                        {
+                            "comment_id": 84,
+                            "comment_post_id": 8,
+                            "comment_text": {
+                                "String": "NNbekUZiSX",
+                                "Valid": true
+                            }
+                        },
+                        {
+                            "comment_id": 108,
+                            "comment_post_id": 8,
+                            "comment_text": {
+                                "String": "uaHYToYjSq",
+                                "Valid": true
+                            }
+                        },
+                        {
+                            "comment_id": 109,
+                            "comment_post_id": 8,
+                            "comment_text": {
+                                "String": "qm2fPPYAtC",
+                                "Valid": true
+                            }
+                        },
+                        {
+                            "comment_id": 118,
+                            "comment_post_id": 8,
+                            "comment_text": {
+                                "String": "2Uzd3QDNZp",
+                                "Valid": true
+                            }
+                        }
+                    ],
+                    "tags": [
+                        {
+                            "tag_id": 1,
+                            "tag_name": "VuS9jZ8uVb"
+                        },
+                        {
+                            "tag_id": 3,
+                            "tag_name": "Dkh9h2fhfU"
+                        },
+                        {
+                            "tag_id": 6,
+                            "tag_name": "BpLnfgDsc2"
+                        }
+                    ]
+                },
+                {
                     "post_id": 15,
                     "post_blog_id": 2,
                     "post_author_id": 2,
@@ -256,19 +622,28 @@
                     "post_body": "n5XJQNaQ0r",
                     "comments": [
                         {
-                            "comment_id": 78,
-                            "comment_post_id": 15,
-                            "comment_text": "5Gh3UWXAZ8"
-                        },
-                        {
                             "comment_id": 72,
                             "comment_post_id": 15,
-                            "comment_text": "tV1hXuUp1D"
+                            "comment_text": {
+                                "String": "tV1hXuUp1D",
+                                "Valid": true
+                            }
+                        },
+                        {
+                            "comment_id": 78,
+                            "comment_post_id": 15,
+                            "comment_text": {
+                                "String": "5Gh3UWXAZ8",
+                                "Valid": true
+                            }
                         },
                         {
                             "comment_id": 133,
                             "comment_post_id": 15,
-                            "comment_text": "j2f8nAULf1"
+                            "comment_text": {
+                                "String": "j2f8nAULf1",
+                                "Valid": true
+                            }
                         }
                     ],
                     "tags": [
@@ -284,286 +659,71 @@
                             "tag_name": "9IVUWSP2Nc"
                         }
                     ]
-                }
-            ]
-        },
-        {
-            "blog_id": 1,
-            "blog_title": "oJj4PSn4Oe",
-            "author": {
-                "author_id": 4,
-                "author_username": "X7tLFJ84qY",
-                "author_password": "U6UrN8ctec",
-                "author_email": "wZt5S4zjhD",
-                "author_bio": "0tXRTmkYKQ",
-                "author_favourite_section": "woodworking"
-            },
-            "posts": [
+                },
                 {
-                    "post_id": 34,
-                    "post_blog_id": 1,
-                    "post_author_id": 4,
+                    "post_id": 25,
+                    "post_blog_id": 2,
+                    "post_author_id": 2,
                     "post_created_on": {
                         "seconds": 1257811200
                     },
                     "post_section": "woodworking",
-                    "post_subject": "IaXEZyJ9Hb",
-                    "draft": "6Y8eu54YDr",
-                    "post_body": "5HLn3pWki1",
+                    "post_subject": "8xf3HZNWnW",
+                    "draft": "1Af4rjzAyB",
+                    "post_body": "Zl96c8YxYT",
                     "comments": [
                         {
-                            "comment_id": 67,
-                            "comment_post_id": 34,
-                            "comment_text": "58ONeDbgGb"
+                            "comment_id": 65,
+                            "comment_post_id": 25,
+                            "comment_text": {
+                                "String": "eHA3ZCgvXK",
+                                "Valid": true
+                            }
                         },
                         {
-                            "comment_id": 81,
-                            "comment_post_id": 34,
-                            "comment_text": "SllRkTm2hH"
+                            "comment_id": 122,
+                            "comment_post_id": 25,
+                            "comment_text": {
+                                "String": "8d63ycPwFJ",
+                                "Valid": true
+                            }
                         },
                         {
-                            "comment_id": 25,
-                            "comment_post_id": 34,
-                            "comment_text": "BhwjV7Gc9u"
+                            "comment_id": 138,
+                            "comment_post_id": 25,
+                            "comment_text": {
+                                "String": "uV9fHjxGUz",
+                                "Valid": true
+                            }
                         },
                         {
-                            "comment_id": 73,
-                            "comment_post_id": 34,
-                            "comment_text": "zjyfJXUUQD"
+                            "comment_id": 155,
+                            "comment_post_id": 25,
+                            "comment_text": {
+                                "String": "bO6oWHkNug",
+                                "Valid": true
+                            }
                         },
                         {
-                            "comment_id": 88,
-                            "comment_post_id": 34,
-                            "comment_text": "oGMDCfLXVQ"
-                        },
-                        {
-                            "comment_id": 179,
-                            "comment_post_id": 34,
-                            "comment_text": "z5iF8zq1lM"
-                        },
-                        {
-                            "comment_id": 11,
-                            "comment_post_id": 34,
-                            "comment_text": "B27FtqAA9w"
+                            "comment_id": 185,
+                            "comment_post_id": 25,
+                            "comment_text": {
+                                "String": "wcZZf2dUM9",
+                                "Valid": true
+                            }
                         }
                     ],
                     "tags": [
+                        {
+                            "tag_name": "HciWvqZTa2"
+                        },
                         {
                             "tag_id": 3,
                             "tag_name": "Dkh9h2fhfU"
                         },
                         {
-                            "tag_id": 5,
-                            "tag_name": "UsaD6HEdz0"
-                        },
-                        {
                             "tag_id": 8,
                             "tag_name": "hV3vC5AWX3"
-                        }
-                    ]
-                },
-                {
-                    "post_id": 19,
-                    "post_blog_id": 1,
-                    "post_author_id": 4,
-                    "post_created_on": {
-                        "seconds": 1257811200
-                    },
-                    "post_section": "painting",
-                    "post_subject": "0LFFfcqNvG",
-                    "draft": "RvmSDvrMdS",
-                    "post_body": "kNPsgkvIId",
-                    "comments": [
-                        {
-                            "comment_id": 106,
-                            "comment_post_id": 19,
-                            "comment_text": "gmKwUMoa5S"
-                        },
-                        {
-                            "comment_id": 191,
-                            "comment_post_id": 19,
-                            "comment_text": "x4j9HlWQyk"
-                        },
-                        {
-                            "comment_post_id": 19,
-                            "comment_text": "HGPGn50NkO"
-                        },
-                        {
-                            "comment_id": 48,
-                            "comment_post_id": 19,
-                            "comment_text": "T6dDoHNSPE"
-                        }
-                    ],
-                    "tags": [
-                        {
-                            "tag_id": 6,
-                            "tag_name": "BpLnfgDsc2"
-                        },
-                        {
-                            "tag_id": 7,
-                            "tag_name": "N95RxRTZHW"
-                        },
-                        {
-                            "tag_id": 8,
-                            "tag_name": "hV3vC5AWX3"
-                        }
-                    ]
-                },
-                {
-                    "post_id": 5,
-                    "post_blog_id": 1,
-                    "post_author_id": 4,
-                    "post_created_on": {
-                        "seconds": 1257811200
-                    },
-                    "post_section": "cooking",
-                    "post_subject": "tOcco2IIaS",
-                    "draft": "ZVYYbxMJM6",
-                    "post_body": "lW3NffpMlo",
-                    "comments": [
-                        {
-                            "comment_id": 141,
-                            "comment_post_id": 5,
-                            "comment_text": "LIYh7R1zV9"
-                        },
-                        {
-                            "comment_id": 28,
-                            "comment_post_id": 5,
-                            "comment_text": "H3DQ6P1YVa"
-                        },
-                        {
-                            "comment_id": 36,
-                            "comment_post_id": 5,
-                            "comment_text": "ZpdAaKIYj0"
-                        },
-                        {
-                            "comment_id": 90,
-                            "comment_post_id": 5,
-                            "comment_text": "gLFNGASTmA"
-                        },
-                        {
-                            "comment_id": 30,
-                            "comment_post_id": 5,
-                            "comment_text": "EE39h4J8wu"
-                        },
-                        {
-                            "comment_id": 134,
-                            "comment_post_id": 5,
-                            "comment_text": "rdV888clme"
-                        },
-                        {
-                            "comment_id": 64,
-                            "comment_post_id": 5,
-                            "comment_text": "eh0VOrNomk"
-                        },
-                        {
-                            "comment_id": 4,
-                            "comment_post_id": 5,
-                            "comment_text": "pz8kb9iAGV"
-                        }
-                    ],
-                    "tags": [
-                        {
-                            "tag_id": 1,
-                            "tag_name": "VuS9jZ8uVb"
-                        },
-                        {
-                            "tag_id": 8,
-                            "tag_name": "hV3vC5AWX3"
-                        },
-                        {
-                            "tag_id": 9,
-                            "tag_name": "9IVUWSP2Nc"
-                        }
-                    ]
-                },
-                {
-                    "post_id": 38,
-                    "post_blog_id": 1,
-                    "post_author_id": 4,
-                    "post_created_on": {
-                        "seconds": 1257811200
-                    },
-                    "post_section": "woodworking",
-                    "post_subject": "GuidBS4Ya7",
-                    "draft": "08XNtldEp3",
-                    "post_body": "GJ2RU98Jas",
-                    "comments": [
-                        {
-                            "comment_id": 76,
-                            "comment_post_id": 38,
-                            "comment_text": "cZfckdrUax"
-                        },
-                        {
-                            "comment_id": 104,
-                            "comment_post_id": 38,
-                            "comment_text": "AqOtcOjeS1"
-                        },
-                        {
-                            "comment_id": 52,
-                            "comment_post_id": 38,
-                            "comment_text": "PU4kzjuFy8"
-                        },
-                        {
-                            "comment_id": 165,
-                            "comment_post_id": 38,
-                            "comment_text": "7ErECITW8C"
-                        },
-                        {
-                            "comment_id": 163,
-                            "comment_post_id": 38,
-                            "comment_text": "Zf8TxfzIoz"
-                        }
-                    ],
-                    "tags": [
-                        {
-                            "tag_id": 1,
-                            "tag_name": "VuS9jZ8uVb"
-                        },
-                        {
-                            "tag_id": 5,
-                            "tag_name": "UsaD6HEdz0"
-                        },
-                        {
-                            "tag_id": 8,
-                            "tag_name": "hV3vC5AWX3"
-                        }
-                    ]
-                },
-                {
-                    "post_id": 22,
-                    "post_blog_id": 1,
-                    "post_author_id": 4,
-                    "post_created_on": {
-                        "seconds": 1257811200
-                    },
-                    "post_section": "cooking",
-                    "post_subject": "VwYAScjtQb",
-                    "draft": "Ks5ss7WOCv",
-                    "post_body": "dQpuP45ZdI",
-                    "comments": [
-                        {
-                            "comment_id": 27,
-                            "comment_post_id": 22,
-                            "comment_text": "ZFqFTbV2W4"
-                        },
-                        {
-                            "comment_id": 119,
-                            "comment_post_id": 22,
-                            "comment_text": "HRxVmRFa3s"
-                        }
-                    ],
-                    "tags": [
-                        {
-                            "tag_name": "HciWvqZTa2"
-                        },
-                        {
-                            "tag_id": 6,
-                            "tag_name": "BpLnfgDsc2"
-                        },
-                        {
-                            "tag_id": 9,
-                            "tag_name": "9IVUWSP2Nc"
                         }
                     ]
                 }
@@ -596,27 +756,42 @@
                         {
                             "comment_id": 15,
                             "comment_post_id": 3,
-                            "comment_text": "0YSyNBiOW4"
-                        },
-                        {
-                            "comment_id": 120,
-                            "comment_post_id": 3,
-                            "comment_text": "6YHEYJs7xV"
-                        },
-                        {
-                            "comment_id": 87,
-                            "comment_post_id": 3,
-                            "comment_text": "TUOHjEb8tz"
+                            "comment_text": {
+                                "String": "0YSyNBiOW4",
+                                "Valid": true
+                            }
                         },
                         {
                             "comment_id": 46,
                             "comment_post_id": 3,
-                            "comment_text": "tVA9ILnhud"
+                            "comment_text": {
+                                "String": "tVA9ILnhud",
+                                "Valid": true
+                            }
                         },
                         {
                             "comment_id": 71,
                             "comment_post_id": 3,
-                            "comment_text": "GeUMYPs1pp"
+                            "comment_text": {
+                                "String": "GeUMYPs1pp",
+                                "Valid": true
+                            }
+                        },
+                        {
+                            "comment_id": 87,
+                            "comment_post_id": 3,
+                            "comment_text": {
+                                "String": "TUOHjEb8tz",
+                                "Valid": true
+                            }
+                        },
+                        {
+                            "comment_id": 120,
+                            "comment_post_id": 3,
+                            "comment_text": {
+                                "String": "6YHEYJs7xV",
+                                "Valid": true
+                            }
                         }
                     ],
                     "tags": [
@@ -634,57 +809,28 @@
                     ]
                 },
                 {
-                    "post_id": 36,
+                    "post_id": 28,
                     "post_blog_id": 3,
                     "post_author_id": 6,
                     "post_created_on": {
                         "seconds": 1257811200
                     },
-                    "post_section": "woodworking",
-                    "post_subject": "Zjb0uDSal9",
-                    "draft": "u7OkPmE7Kd",
-                    "post_body": "hZp0lA3Bav",
+                    "post_section": "snowboarding",
+                    "post_subject": "uGNUcNPovq",
+                    "draft": "xhUEe5qh4H",
+                    "post_body": "rUGhjFmkDY",
                     "comments": [
                         {
-                            "comment_id": 139,
-                            "comment_post_id": 36,
-                            "comment_text": "R9KTZ604oo"
-                        },
-                        {
-                            "comment_id": 168,
-                            "comment_post_id": 36,
-                            "comment_text": "Yaty4uqMgN"
-                        },
-                        {
-                            "comment_id": 35,
-                            "comment_post_id": 36,
-                            "comment_text": "EsVg6gZqzY"
-                        },
-                        {
-                            "comment_id": 3,
-                            "comment_post_id": 36,
-                            "comment_text": "LwyTM7D4Uf"
-                        },
-                        {
-                            "comment_id": 153,
-                            "comment_post_id": 36,
-                            "comment_text": "y5K5pHxs5M"
-                        },
-                        {
-                            "comment_id": 182,
-                            "comment_post_id": 36,
-                            "comment_text": "KGBwl1bBQ9"
-                        },
-                        {
-                            "comment_id": 18,
-                            "comment_post_id": 36,
-                            "comment_text": "aBUibyJ1O0"
+                            "comment_text": {
+                                "String": "",
+                                "Valid": false
+                            }
                         }
                     ],
                     "tags": [
                         {
-                            "tag_id": 2,
-                            "tag_name": "5a84jjJkwz"
+                            "tag_id": 1,
+                            "tag_name": "VuS9jZ8uVb"
                         },
                         {
                             "tag_id": 5,
@@ -709,19 +855,28 @@
                     "post_body": "e57p6GnKO7",
                     "comments": [
                         {
-                            "comment_id": 66,
+                            "comment_id": 26,
                             "comment_post_id": 30,
-                            "comment_text": "7AL9uROLSy"
+                            "comment_text": {
+                                "String": "ngjpmispzD",
+                                "Valid": true
+                            }
                         },
                         {
                             "comment_id": 62,
                             "comment_post_id": 30,
-                            "comment_text": "L1wiM6LRmA"
+                            "comment_text": {
+                                "String": "L1wiM6LRmA",
+                                "Valid": true
+                            }
                         },
                         {
-                            "comment_id": 26,
+                            "comment_id": 66,
                             "comment_post_id": 30,
-                            "comment_text": "ngjpmispzD"
+                            "comment_text": {
+                                "String": "7AL9uROLSy",
+                                "Valid": true
+                            }
                         }
                     ],
                     "tags": [
@@ -739,23 +894,78 @@
                     ]
                 },
                 {
-                    "post_id": 28,
+                    "post_id": 36,
                     "post_blog_id": 3,
                     "post_author_id": 6,
                     "post_created_on": {
                         "seconds": 1257811200
                     },
-                    "post_section": "snowboarding",
-                    "post_subject": "uGNUcNPovq",
-                    "draft": "xhUEe5qh4H",
-                    "post_body": "rUGhjFmkDY",
+                    "post_section": "woodworking",
+                    "post_subject": "Zjb0uDSal9",
+                    "draft": "u7OkPmE7Kd",
+                    "post_body": "hZp0lA3Bav",
                     "comments": [
-                        {}
+                        {
+                            "comment_id": 3,
+                            "comment_post_id": 36,
+                            "comment_text": {
+                                "String": "LwyTM7D4Uf",
+                                "Valid": true
+                            }
+                        },
+                        {
+                            "comment_id": 18,
+                            "comment_post_id": 36,
+                            "comment_text": {
+                                "String": "aBUibyJ1O0",
+                                "Valid": true
+                            }
+                        },
+                        {
+                            "comment_id": 35,
+                            "comment_post_id": 36,
+                            "comment_text": {
+                                "String": "EsVg6gZqzY",
+                                "Valid": true
+                            }
+                        },
+                        {
+                            "comment_id": 139,
+                            "comment_post_id": 36,
+                            "comment_text": {
+                                "String": "R9KTZ604oo",
+                                "Valid": true
+                            }
+                        },
+                        {
+                            "comment_id": 153,
+                            "comment_post_id": 36,
+                            "comment_text": {
+                                "String": "y5K5pHxs5M",
+                                "Valid": true
+                            }
+                        },
+                        {
+                            "comment_id": 168,
+                            "comment_post_id": 36,
+                            "comment_text": {
+                                "String": "Yaty4uqMgN",
+                                "Valid": true
+                            }
+                        },
+                        {
+                            "comment_id": 182,
+                            "comment_post_id": 36,
+                            "comment_text": {
+                                "String": "KGBwl1bBQ9",
+                                "Valid": true
+                            }
+                        }
                     ],
                     "tags": [
                         {
-                            "tag_id": 1,
-                            "tag_name": "VuS9jZ8uVb"
+                            "tag_id": 2,
+                            "tag_name": "5a84jjJkwz"
                         },
                         {
                             "tag_id": 5,
@@ -770,19 +980,21 @@
             ]
         }
     ],
-    "TestNotNull": [
+    "TestNotNull|postgres": [
         {
             "bool": true,
             "bool2": {
                 "Bool": true,
                 "Valid": true
             },
-            "time": "0000-01-02T00:00:00Z",
+            "time": "0000-01-01T15:04:05Z",
             "time2": {
-                "Time": "0000-01-02T00:00:00Z",
+                "Time": "0000-01-01T15:04:05Z",
                 "Valid": true
             },
-            "timestamp": {},
+            "timestamp": {
+                "seconds": 1136160000
+            },
             "string": "1",
             "string2": {
                 "String": "1",
@@ -810,7 +1022,7 @@
             "uint64": 1
         }
     ],
-    "TestNull": [
+    "TestNull|postgres": [
         {
             "bool2": {
                 "Bool": false,
@@ -849,6 +1061,8 @@
             "date": "2004-10-19T00:00:00Z",
             "double_precision": 1,
             "integer": 1,
+            "numeric": 1,
+            "oid": 1,
             "real": 1,
             "smallint": 1,
             "text": "a",
@@ -858,6 +1072,146 @@
             "time_with_time_zone": "0000-01-01T04:05:06-08:00",
             "uuid": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
             "xml": "a"
+        }
+    ],
+    "TestRelation": [
+        {
+            "id": 1,
+            "basic_submap": [
+                {
+                    "Int64": 2,
+                    "Valid": true
+                },
+                {
+                    "Int64": 3,
+                    "Valid": true
+                },
+                {
+                    "Int64": 4,
+                    "Valid": true
+                }
+            ],
+            "basic_submap_ptr": [
+                {
+                    "Int64": 3,
+                    "Valid": true
+                },
+                {
+                    "Int64": 4,
+                    "Valid": true
+                },
+                {
+                    "Int64": 5,
+                    "Valid": true
+                }
+            ],
+            "basic_submap_ptr_ptr": [
+                4,
+                5,
+                6
+            ],
+            "submap": [
+                {
+                    "sample_submap": 5
+                },
+                {
+                    "sample_submap": 6
+                },
+                {
+                    "sample_submap": 7
+                }
+            ],
+            "submap_ptr": [
+                {
+                    "sample_submap": 6
+                },
+                {
+                    "sample_submap": 7
+                },
+                {
+                    "sample_submap": 8
+                }
+            ],
+            "submap_ptr_ptr": [
+                {
+                    "sample_submap": 7
+                },
+                {
+                    "sample_submap": 8
+                },
+                {
+                    "sample_submap": 9
+                }
+            ]
+        },
+        {
+            "id": 2,
+            "basic_submap": [
+                {
+                    "Int64": 2,
+                    "Valid": true
+                },
+                {
+                    "Int64": 3,
+                    "Valid": true
+                },
+                {
+                    "Int64": 4,
+                    "Valid": true
+                }
+            ],
+            "basic_submap_ptr": [
+                {
+                    "Int64": 3,
+                    "Valid": true
+                },
+                {
+                    "Int64": 4,
+                    "Valid": true
+                },
+                {
+                    "Int64": 5,
+                    "Valid": true
+                }
+            ],
+            "basic_submap_ptr_ptr": [
+                4,
+                5,
+                6
+            ],
+            "submap": [
+                {
+                    "sample_submap": 5
+                },
+                {
+                    "sample_submap": 6
+                },
+                {
+                    "sample_submap": 7
+                }
+            ],
+            "submap_ptr": [
+                {
+                    "sample_submap": 6
+                },
+                {
+                    "sample_submap": 7
+                },
+                {
+                    "sample_submap": 8
+                }
+            ],
+            "submap_ptr_ptr": [
+                {
+                    "sample_submap": 7
+                },
+                {
+                    "sample_submap": 8
+                },
+                {
+                    "sample_submap": 9
+                }
+            ]
         }
     ]
 }

@@ -54,9 +54,9 @@ var NotNullQuery = `
 select
 CAST ( 1 AS bool ) as "bool",
 CAST ( 1 AS bool ) as "bool2",
-CAST ( '24:00:00-1459' AS time ) as "time",
-CAST ( '24:00:00-1459' AS time ) as "time2",
-CAST ( '24:00:00-1459' AS time ) as "timestamp",
+CAST ( '2006-01-02T15:04:05Z07:00' AS time ) as "time",
+CAST ( '2006-01-02T15:04:05Z07:00' AS time ) as "time2",
+CAST ( '2006-01-02T15:04:05Z07:00' AS date ) as "timestamp", 
 CAST ( 1 AS text ) as "string",
 CAST ( 1 AS text ) as "string2",
 CAST ( 1 AS real) as "float32",

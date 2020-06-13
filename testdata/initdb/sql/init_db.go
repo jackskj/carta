@@ -59,6 +59,27 @@ create table tag (
   name varchar(255)
 );
 
+drop table if exists relations;
+create table relations ( 
+  id                           int ,
+  basic_submap                 int ,
+  basic_submap_ptr             int ,
+  basic_submap_ptr_ptr         int ,
+  submap_sample_submap         int ,
+  submap_ptr_sample_submap     int ,
+  submap_ptr_ptr_sample_submap int
+);
+
+insert into relations values ( 1, 2, 3, 4, 5, 6, 7);
+insert into relations values ( 1, 2, 3, 4, 5, 6, 7);
+insert into relations values ( 1, 3, 4, 5, 6, 7, 8);
+insert into relations values ( 1, 4, 5, 6, 7, 8, 9);
+
+insert into relations values ( 2, 2, 3, 4, 5, 6, 7);
+insert into relations values ( 2, 2, 3, 4, 5, 6, 7);
+insert into relations values ( 2, 3, 4, 5, 6, 7, 8);
+insert into relations values ( 2, 4, 5, 6, 7, 8, 9);
+
 {{end}}
 
 
