@@ -150,9 +150,10 @@ type Blog struct {
 	// To define has-many relationship, use slices
 	Posts []*Post // valid options include: *[]*Post, []*Post , *[]Post, and []Post
 
-	// when your has-many relationship only has one corresponding column, you can use a slice of a settable type
-	TagIds     []int
-	CommentIds []sql.NullInt64
+	// when your has-many relationship only has one corresponding column, 
+        // you can use a slice of a settable type
+	TagIds     []int           `db:"tag_id"`
+	CommentIds []sql.NullInt64 `db:"comment_id"`
 }
 ```
 
