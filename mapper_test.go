@@ -239,19 +239,38 @@ func TestBlog(m *testing.T) {
 }
 
 func TestNull(m *testing.T) {
-	resp := []td.NullTest{}
-	if err := carta.Map(queryPG(td.NullQuery), &resp); err != nil {
+	respPG := []td.NullTest{}
+	if err := carta.Map(queryPG(td.NullQueryPG), &respPG); err != nil {
 		log.Fatal(err.Error())
 	}
-	testResults["TestNull|postgres"] = resp
+	respMySQL := []td.NullTest{}
+	if err := carta.Map(queryMysql(td.NullQueryMySql), &respMySQL); err != nil {
+		log.Fatal(err.Error())
+	}
+	ansPG, _ := json.Marshal(respPG)
+	ansMySQL, _ := json.Marshal(respMySQL)
+	if string(ansPG) != string(ansMySQL) {
+		log.Fatal(errors.New("Test Null Produced Inconsistent Results"))
+	}
+	testResults["TestNull"] = respPG
 }
 
 func TestNotNull(m *testing.T) {
-	resp := []td.NullTest{}
-	if err := carta.Map(queryPG(td.NotNullQuery), &resp); err != nil {
+	respPG := []td.NullTest{}
+	if err := carta.Map(queryPG(td.NotNullQueryPG), &respPG); err != nil {
 		log.Fatal(err.Error())
 	}
-	testResults["TestNotNull|postgres"] = resp
+	respMySQL := []td.NullTest{}
+	if err := carta.Map(queryMysql(td.NotNullQueryMySQL), &respMySQL); err != nil {
+		log.Fatal(err.Error())
+	}
+	ansPG, _ := json.Marshal(respPG)
+	ansMySQL, _ := json.Marshal(respMySQL)
+	if string(ansPG) != string(ansMySQL) {
+		log.Println(string(ansMySQL))
+		log.Fatal(errors.New("Test Not Null Produced Inconsistent Results"))
+	}
+	testResults["TestNotNull"] = respPG
 }
 
 func TestPGTypes(m *testing.T) {

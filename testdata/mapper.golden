@@ -980,16 +980,16 @@
             ]
         }
     ],
-    "TestNotNull|postgres": [
+    "TestNotNull": [
         {
             "bool": true,
             "bool2": {
                 "Bool": true,
                 "Valid": true
             },
-            "time": "0000-01-01T15:04:05Z",
+            "time": "2006-01-02T15:04:05Z",
             "time2": {
-                "Time": "0000-01-01T15:04:05Z",
+                "Time": "2006-01-02T15:04:05Z",
                 "Valid": true
             },
             "timestamp": {
@@ -1022,7 +1022,7 @@
             "uint64": 1
         }
     ],
-    "TestNull|postgres": [
+    "TestNull": [
         {
             "bool2": {
                 "Bool": false,

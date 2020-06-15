@@ -1,18 +1,19 @@
+
 # Carta
 Dead simple SQL data mapper for complex Go structs. 
 
-Load SQL data onto Go structs while keeping track of has-one, has-many relationships
+Load SQL data onto Go structs while keeping track of has-one and has-many relationships
 
 ## Examples 
 Using carta is very simple. All you need to do is: 
 ```
 // 1) Run your query
 if rows, err = sqlDB.Query(blogQuery); err != nil {
-	// err
+	// error
 }
 
 // 2) Instantiate a slice(or struct) which you want to populate 
-blogs := []Blog
+blogs := []Blog{}
 
 // 3) Map the SQL rows to your slice
 carta.Map(rows, &blogs)
@@ -93,6 +94,7 @@ blogs:
 
 
 ## Comparison to Related Projects
+
 #### GORM
 Carta is NOT an an object-relational mapper(ORM). Read more in [Approach](#Approach)
 
@@ -112,23 +114,27 @@ type Blog struct {
 	BlogId int // expected column name : "blog_id"
 
 	// When tag is specified, it takes priority
-	Abc string `db:"blog_title"` // expected column name : "blog_title"
+	Abc string `db:"blog_title"` // expected column name: "blog_title"
 
 	// If you define multiple fiels with the same struct,
-	// you can use a tag to identify a column prefix (with underscore concatination)
+	// you can use a tag to identify a column prefix 
+	// (with underscore concatination)
 
-	Writer Author `db: "writer"` // possible column names: "author_id", "writer_author_id",
-
-	Reviewer Author `db: "reviewer"` // possible column names: "author_id", "rewiewer_author_id",
+	// possible column names:  "writer_author_id", "author_id"
+	Writer Author `db: "writer"`
+        
+	// possible column names: "rewiewer_author_id", "author_id",
+	Reviewer Author `db: "reviewer"`
 }
 
 type Author struct {
 	AuthorId int `db:"author_id"`
 }
 ```
+
 ### Data Types and Relationships
 
-Any primative types, time.Time, protobuf Timestamp, and sql.NullXXX can be loaded with Carta.
+Any primative types, time.Time, protobuf Timestamp, and sql.NullX can be loaded with Carta.
 These types are one-to-one mapped with your SQL columns
 
 To define more complex SQL relationships use slices and structs as in example below:
@@ -137,20 +143,22 @@ To define more complex SQL relationships use slices and structs as in example be
 type Blog struct {
 	BlogId int  // Will map directly with "blog_id" column 
 
-	// If your SQL data can potentially be "null", make sure to use pointers or sql.NullXXX
+	// If your SQL data can be "null", use pointers or sql.NullX
 	AuthorId  *int
 	CreatedOn *timestamp.Timestamp // protobuf timestamp
 	UpdatedOn *time.Time
 	SonsorId  sql.NullInt64
 
-	// To define has-one relationship, use nested struct or pointer to a struct
+	// To define has-one relationship, use nested structs 
+	// or pointer to a struct
 	Author *Author
 
 	// To define has-many relationship, use slices
-	Posts []*Post // valid options include: *[]*Post, []*Post , *[]Post, and []Post
+	// options include: *[]*Post, []*Post, *[]Post, []Post
+	Posts []*Post 
 
-	// when your has-many relationship only has one corresponding column,
-        // you can use a slice of a settable type
+	// If your has-many relationship corresponds to one column,
+	// you can use a slice of a settable type
 	TagIds     []int           `db:"tag_id"`
 	CommentIds []sql.NullInt64 `db:"comment_id"`
 }
@@ -158,11 +166,12 @@ type Blog struct {
 
 ### Drivers 
 
-Recommended driver for Postgres is [lib/pg](https://github.com/lib/pq), for MySql use [go-sql-driver/mysql](https://github.com/go-sql-driver/mysqlq).
+Recommended driver for Postgres is [lib/pg](https://github.com/lib/pq), for MySql use [go-sql-driver/mysql](https://github.com/go-sql-driver/mysql).
 
-When using MySql, carta expects TIME and DATETIME to arrive in time.Time format. Therefore, make sure to add "parseTime=true" in your connection string. 
+When using MySql, carta expects time data to arrive in time.Time format. Therefore, make sure to add "parseTime=true" in your connection string, when using DATE and DATETIME types.
 
-Time data conversion from plain text will be added in the future versions of Carta.
+Other types, such as TIME, will will be converted from plain text in future versions of Carta.
+
 ## Installation 
 ```
 go get -u github.com/jackskj/carta

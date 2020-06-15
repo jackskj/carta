@@ -76,7 +76,6 @@ type Mapper struct {
 	// the following querry would correctly map if we were mapping to *[]Manager
 	// "select id, employees_id from employees join managers"
 	// employees_ is the prefix of the parent (lower case of the parent with "_")
-	// FieldNames    map[int]string
 	Fields        map[fieldIndex]Field
 	AncestorNames []string // Field.Name of ancestors
 

@@ -28,7 +28,7 @@ type NullTest struct {
 	Uint64    *uint64              `db:"uint64" json:"uint64,omitempty"`
 }
 
-var NullQuery = `
+var NullQueryPG = `
 select
 CAST ( null AS bool ) as "bool",
 CAST ( null AS bool ) as "bool2",
@@ -50,12 +50,12 @@ CAST ( null AS integer ) as "uint32",
 CAST ( null AS bigint ) as "uint64"
 `
 
-var NotNullQuery = `
+var NotNullQueryPG = `
 select
 CAST ( 1 AS bool ) as "bool",
 CAST ( 1 AS bool ) as "bool2",
-CAST ( '2006-01-02T15:04:05Z07:00' AS time ) as "time",
-CAST ( '2006-01-02T15:04:05Z07:00' AS time ) as "time2",
+CAST ( '2006-01-02T15:04:05Z07:00' AS timestamp ) as "time",
+CAST ( '2006-01-02T15:04:05Z07:00' AS timestamp ) as "time2",
 CAST ( '2006-01-02T15:04:05Z07:00' AS date ) as "timestamp", 
 CAST ( 1 AS text ) as "string",
 CAST ( 1 AS text ) as "string2",
@@ -70,4 +70,50 @@ CAST ( 1 AS bigint ) as "int642",
 CAST ( 1 AS integer ) as "uint",
 CAST ( 1 AS integer ) as "uint32",
 CAST ( 1 AS bigint ) as "uint64"
+`
+
+var NullQueryMySql = `
+select
+nullbool as "bool",
+nullbool as "bool2",
+CAST( null AS DATETIME ) as "time",
+CAST( null AS DATETIME ) as "time2",
+CAST( null AS DATE ) as "timestamp", 
+CAST( null AS CHAR ) as "string",
+CAST( null AS CHAR ) as "string2",
+CAST( null AS FLOAT(32)) as "float32",
+CAST( null AS DECIMAL(64)) as "float64",
+CAST( null AS DECIMAL(64)) as "float642",
+CAST( null AS UNSIGNED ) as "int",
+CAST( null AS UNSIGNED ) as "int32",
+CAST( null AS UNSIGNED ) as "int322",
+CAST( null AS UNSIGNED ) as "int64",
+CAST( null AS UNSIGNED ) as "int642",
+CAST( null AS UNSIGNED ) as "uint",
+CAST( null AS UNSIGNED ) as "uint32",
+CAST( null AS UNSIGNED ) as "uint64"
+from nullbool
+limit 1
+`
+
+var NotNullQueryMySQL = `
+select
+true as "bool",
+true as "bool2",
+CAST( '2006-01-02T15:04:05Z07:00' AS DATETIME ) as "time",
+CAST( '2006-01-02T15:04:05Z07:00' AS DATETIME ) as "time2",
+CAST( '2006-01-02T15:04:05Z07:00' AS DATE ) as "timestamp", 
+CAST( 1 AS CHAR ) as "string",
+CAST( 1 AS CHAR ) as "string2",
+CAST( 1 AS float(32) ) as "float32",
+CAST( 1 AS decimal(64) ) as "float64",
+CAST( 1 AS decimal(64) ) as "float642",
+CAST( 1 AS UNSIGNED ) as "int",
+CAST( 1 AS UNSIGNED ) as "int32",
+CAST( 1 AS UNSIGNED ) as "int322",
+CAST( 1 AS UNSIGNED ) as "int64",
+CAST( 1 AS UNSIGNED ) as "int642",
+CAST( 1 AS UNSIGNED ) as "uint",
+CAST( 1 AS UNSIGNED ) as "uint32",
+CAST( 1 AS UNSIGNED ) as "uint64"
 `

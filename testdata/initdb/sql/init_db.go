@@ -80,6 +80,11 @@ insert into relations values ( 2, 2, 3, 4, 5, 6, 7);
 insert into relations values ( 2, 3, 4, 5, 6, 7, 8);
 insert into relations values ( 2, 4, 5, 6, 7, 8, 9);
 
+drop table if exists nullbool;
+create table nullbool (
+     nullbool bool
+);
+insert into nullbool values (null);
 {{end}}
 
 

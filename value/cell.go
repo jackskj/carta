@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"log"
 	"math"
 	"reflect"
 	"strconv"
@@ -15,8 +16,6 @@ import (
 
 // TODO:  timestamp/time/ from string
 // TODO:  int/float/uint/bool from string
-
-var Types = map[string]reflect.Type{}
 
 type Cell struct {
 	kind       reflect.Kind // data type with which Cell will be instantiated
@@ -190,6 +189,7 @@ func (c Cell) Time() (time.Time, error) {
 		// TODO: Parse from string
 		// switch c.colTypName {
 		// }
+		log.Println(c.text, " >aslkdfjaslkfj")
 		return time.Time{}, errors.New("cannot convert time data which arrived as string or []uint8 from sql")
 	}
 	return c.time, nil

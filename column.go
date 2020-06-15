@@ -79,7 +79,7 @@ func getColumnNameCandidates(fieldName string, ancestorNames []string) map[strin
 	candidates := map[string]bool{}
 	if fieldName != "" {
 		candidates[fieldName] = true
-		candidates[ToSnakeCase(fieldName)] = true
+		candidates[toSnakeCase(fieldName)] = true
 		candidates[strings.ToLower(fieldName)] = true
 	}
 	if len(ancestorNames) == 0 {
@@ -94,12 +94,12 @@ func getColumnNameCandidates(fieldName string, ancestorNames []string) map[strin
 		}
 		candidates[nameConcat] = true
 		candidates[strings.ToLower(nameConcat)] = true
-		candidates[ToSnakeCase(nameConcat)] = true
+		candidates[toSnakeCase(nameConcat)] = true
 	}
 	return candidates
 }
 
-func ToSnakeCase(s string) string {
+func toSnakeCase(s string) string {
 	delimiter := "_"
 	s = strings.Trim(s, " ")
 	n := ""
