@@ -18,6 +18,9 @@ install:
 	# generating map binary in $$GOPATH/bin
 	go install .
 
+initdb:
+	go test -v -initdb
+
 test:
 	go test -v
 
