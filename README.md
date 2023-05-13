@@ -166,7 +166,7 @@ type Blog struct {
 
 ### Drivers 
 
-Recommended driver for Postgres is [lib/pg](https://github.com/lib/pq), for MySql use [go-sql-driver/mysql](https://github.com/go-sql-driver/mysql).
+Recommended driver for Postgres is [lib/pq](https://github.com/lib/pq), for MySql use [go-sql-driver/mysql](https://github.com/go-sql-driver/mysql).
 
 When using MySql, carta expects time data to arrive in time.Time format. Therefore, make sure to add "parseTime=true" in your connection string, when using DATE and DATETIME types.
 
